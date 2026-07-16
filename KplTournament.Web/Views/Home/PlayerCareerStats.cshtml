@@ -1,0 +1,338 @@
+@model KplTournament.Web.ViewModels.PlayerCareerStatsVm
+
+@{
+    ViewData["Title"] = Model.PlayerName + " - Career Stats";
+}
+
+<section class="pcs-container">
+
+    <section class="pcs-header">
+        @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
+        {
+            <img src="@Model.PhotoPath" alt="@Model.PlayerName" class="pcs-photo" />
+        }
+        else
+        {
+            <div class="pcs-photo pcs-photo-placeholder">@Model.PlayerName.Substring(0, 1).ToUpper()</div>
+        }
+        <h1>@Model.PlayerName</h1>
+        <p>@Model.TeamName &middot; Career Stats</p>
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <a asp-controller="Admin" asp-action="EditPlayer" asp-route-id="@Model.PlayerId" class="pcs-edit-link">Edit Photo</a>
+        }
+    </section>
+
+    <section class="pcs-card">
+        <h2 class="pcs-section-title">Overview</h2>
+        <div class="pcs-stat-grid">
+            <div class="pcs-stat">
+                <span class="pcs-stat-label">Matches</span>
+                <span class="pcs-stat-value">@Model.Matches</span>
+            </div>
+            <div class="pcs-stat">
+                <span class="pcs-stat-label">Runs</span>
+                <span class="pcs-stat-value">@Model.Runs</span>
+            </div>
+            <div class="pcs-stat">
+                <span class="pcs-stat-label">Wickets</span>
+                <span class="pcs-stat-value">@Model.WicketsTaken</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="pcs-card">
+        <h2 class="pcs-section-title">🏏 Batting</h2>
+        <div class="pcs-table-wrap">
+            <table class="pcs-table">
+                <thead>
+                    <tr>
+                        <th>Inn</th>
+                        <th>Runs</th>
+                        <th>Balls</th>
+                        <th>Highest</th>
+                        <th>Avg</th>
+                        <th>SR</th>
+                        <th>4s</th>
+                        <th>6s</th>
+                        <th>50s</th>
+                        <th>100s</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Model.Innings</td>
+                        <td>@Model.Runs</td>
+                        <td>@Model.BallsFaced</td>
+                        <td>@Model.HighestScore</td>
+                        <td>@Model.BattingAverage</td>
+                        <td>@Model.BattingStrikeRate</td>
+                        <td>@Model.Fours</td>
+                        <td>@Model.Sixes</td>
+                        <td>@Model.Fifties</td>
+                        <td>@Model.Hundreds</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="pcs-card">
+        <h2 class="pcs-section-title">🎯 Bowling</h2>
+        <div class="pcs-table-wrap">
+            <table class="pcs-table">
+                <thead>
+                    <tr>
+                        <th>Overs</th>
+                        <th>Runs Given</th>
+                        <th>Wickets</th>
+                        <th>Economy</th>
+                        <th>Avg</th>
+                        <th>Best</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Model.OversBowledText</td>
+                        <td>@Model.RunsConceded</td>
+                        <td>@Model.WicketsTaken</td>
+                        <td>@Model.BowlingEconomy</td>
+                        <td>@Model.BowlingAverage</td>
+                        <td>@Model.BestBowling</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="pcs-card">
+        <h2 class="pcs-section-title">🧤 Fielding</h2>
+        <div class="pcs-table-wrap">
+            <table class="pcs-table">
+                <thead>
+                    <tr>
+                        <th>Catches</th>
+                        <th>Run Outs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@Model.Catches</td>
+                        <td>@Model.RunOuts</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</section>
+
+<style>
+    body {
+        margin: 0;
+    }
+
+    .pcs-container {
+        min-height: calc(100vh - 70px);
+        padding: 20px 0 40px;
+        background: linear-gradient(rgba(0,0,0,.70), rgba(0,0,0,.70)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .pcs-header,
+    .pcs-card {
+        width: 85%;
+        max-width: 1100px;
+        margin: 0 auto 18px;
+    }
+
+    .pcs-header {
+        padding: 16px;
+        border-radius: 18px;
+        text-align: center;
+        background: linear-gradient(180deg, rgba(139, 91, 86, .55), rgba(18, 32, 43, .78)) !important;
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+        .pcs-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 1000;
+            color: #ffffff;
+            text-shadow: 0 4px 16px rgba(0,0,0,.6);
+        }
+
+            .pcs-header h1::before {
+                content: "🏏 ";
+            }
+
+        .pcs-header p {
+            margin: 6px 0 0;
+            color: rgba(255,255,255,.85);
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0,0,0,.5);
+        }
+
+        .pcs-photo {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 12px;
+            display: block;
+            border: 3px solid rgba(255,255,255,.4);
+            box-shadow: 0 10px 26px rgba(0,0,0,.5);
+        }
+
+        .pcs-photo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a1200;
+            font-weight: 1000;
+            font-size: 36px;
+        }
+
+        .pcs-edit-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.16);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+            .pcs-edit-link:hover {
+                background: rgba(255,255,255,.28);
+                color: #ffffff;
+            }
+
+    .pcs-card {
+        padding: 20px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(139, 91, 86, .55), rgba(18, 32, 43, .78)) !important;
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+    .pcs-section-title {
+        margin: 0 0 16px;
+        font-size: 18px;
+        font-weight: 1000;
+        color: #ffffff;
+        text-shadow: 0 3px 12px rgba(0,0,0,.6);
+    }
+
+        .pcs-section-title::after {
+            content: "";
+            display: block;
+            width: 42px;
+            height: 3px;
+            margin-top: 7px;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #fbbf24, #60a5fa);
+        }
+
+    /* STATS */
+    .pcs-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .pcs-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 14px;
+        border-radius: 14px;
+        background: rgba(0,0,0,.34);
+        text-align: center;
+    }
+
+    .pcs-stat-label {
+        color: rgba(255,255,255,.8);
+        font-size: 12.5px;
+        font-weight: 700;
+        text-shadow: 0 2px 6px rgba(0,0,0,.5);
+    }
+
+    .pcs-stat-value {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 1000;
+        text-shadow: 0 3px 10px rgba(0,0,0,.6);
+    }
+
+    /* TABLE */
+    .pcs-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 14px;
+    }
+
+    .pcs-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        border-radius: 14px;
+        overflow: hidden;
+        background: transparent !important;
+        min-width: 560px;
+    }
+
+        .pcs-table thead {
+            background: linear-gradient(135deg, rgba(139, 91, 86, .88), rgba(18, 32, 43, .88)) !important;
+        }
+
+            .pcs-table thead th {
+                padding: 12px 8px;
+                color: #ffffff !important;
+                font-size: 13px;
+                font-weight: 1000;
+                text-align: center;
+                text-shadow: 0 2px 8px rgba(0,0,0,.5);
+            }
+
+        .pcs-table td {
+            padding: 10px 8px;
+            font-size: 13.5px;
+            font-weight: 750;
+            color: #ffffff !important;
+            background: rgba(0, 0, 0, .34) !important;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            text-shadow: 0 2px 8px rgba(0,0,0,.75);
+        }
+
+        .pcs-table tbody tr:hover td {
+            background: rgba(255,255,255,.14) !important;
+        }
+
+    /* MOBILE */
+    @@media (max-width: 768px) {
+        .pcs-header,
+        .pcs-card {
+            width: 94%;
+        }
+
+        .pcs-stat-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pcs-table {
+            min-width: 500px;
+        }
+    }
+</style>
+

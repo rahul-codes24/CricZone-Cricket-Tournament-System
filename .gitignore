@@ -1,0 +1,19 @@
+## Ignore Visual Studio & .NET build artifacts
+bin/
+obj/
+App_Data/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Ignore databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+appsettings.Development.json
+
+## Ignore logs
+*.log

@@ -1,0 +1,346 @@
+@model KplTournament.Web.ViewModels.HeadToHeadVm?
+
+@{
+    ViewData["Title"] = "Head to Head";
+    var teams = ViewBag.Teams as List<KplTournament.Web.Models.Team> ?? new();
+}
+
+<section class="h2h-container">
+
+    <section class="h2h-header">
+        <h1>Head to Head</h1>
+        <p>Compare two teams' tournament history</p>
+    </section>
+
+    <section class="h2h-card">
+        <form method="get" asp-controller="Home" asp-action="HeadToHead" class="h2h-form">
+            <div class="h2h-field">
+                <label>Team A</label>
+                <select name="teamAId" class="h2h-select">
+                    <option value="">-- Select Team --</option>
+                    @foreach (var t in teams)
+                    {
+                        <option value="@t.Id" selected="@(Model != null && Model.TeamA.Id == t.Id)">@t.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="h2h-field">
+                <label>Team B</label>
+                <select name="teamBId" class="h2h-select">
+                    <option value="">-- Select Team --</option>
+                    @foreach (var t in teams)
+                    {
+                        <option value="@t.Id" selected="@(Model != null && Model.TeamB.Id == t.Id)">@t.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="h2h-field h2h-submit-wrap">
+                <button type="submit" class="h2h-btn">Compare</button>
+            </div>
+        </form>
+    </section>
+
+    @if (Model != null)
+    {
+        <section class="h2h-card">
+            <h2 class="h2h-section-title">Overview</h2>
+            <div class="h2h-stat-grid">
+                <div class="h2h-stat">
+                    <span class="h2h-stat-label">Matches Played</span>
+                    <span class="h2h-stat-value">@Model.MatchesPlayed</span>
+                </div>
+                <div class="h2h-stat">
+                    <span class="h2h-stat-label">@Model.TeamA.Name Wins</span>
+                    <span class="h2h-stat-value">@Model.TeamAWins</span>
+                </div>
+                <div class="h2h-stat">
+                    <span class="h2h-stat-label">@Model.TeamB.Name Wins</span>
+                    <span class="h2h-stat-value">@Model.TeamBWins</span>
+                </div>
+                <div class="h2h-stat">
+                    <span class="h2h-stat-label">@Model.TeamA.Name Highest Score</span>
+                    <span class="h2h-stat-value">@Model.TeamAHighestScore</span>
+                </div>
+                <div class="h2h-stat">
+                    <span class="h2h-stat-label">@Model.TeamB.Name Highest Score</span>
+                    <span class="h2h-stat-value">@Model.TeamBHighestScore</span>
+                </div>
+                @if (Model.NoResult > 0)
+                {
+                    <div class="h2h-stat">
+                        <span class="h2h-stat-label">Ties / No Result</span>
+                        <span class="h2h-stat-value">@Model.NoResult</span>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="h2h-card">
+            <h2 class="h2h-section-title">Match History</h2>
+
+            @if (Model.Matches.Any())
+            {
+                <div class="h2h-table-wrap">
+                    <table class="h2h-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Venue</th>
+                                <th>Score</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model.Matches)
+                            {
+                                <tr>
+                                    <td>@m.MatchDate.ToString("dd MMM yyyy")</td>
+                                    <td>@m.Venue</td>
+                                    <td>@m.TeamA?.Name @m.TeamAScore/@m.TeamAWickets &nbsp;vs&nbsp; @m.TeamB?.Name @m.TeamBScore/@m.TeamBWickets</td>
+                                    <td>@m.ResultText</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="h2h-empty">These teams haven't played a completed match yet.</p>
+            }
+        </section>
+    }
+
+</section>
+
+<style>
+    body {
+        margin: 0;
+    }
+
+    .h2h-container {
+        min-height: calc(100vh - 70px);
+        padding: 20px 0 40px;
+        background: linear-gradient(rgba(0,0,0,.70), rgba(0,0,0,.70)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .h2h-header,
+    .h2h-card {
+        width: 85%;
+        max-width: 1100px;
+        margin: 0 auto 18px;
+    }
+
+    .h2h-header {
+        padding: 16px;
+        border-radius: 18px;
+        text-align: center;
+        background: linear-gradient(180deg, rgba(139, 91, 86, .55), rgba(18, 32, 43, .78)) !important;
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+        .h2h-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 1000;
+            color: #ffffff;
+            text-shadow: 0 4px 16px rgba(0,0,0,.6);
+        }
+
+            .h2h-header h1::before {
+                content: "⚔️ ";
+            }
+
+        .h2h-header p {
+            margin: 6px 0 0;
+            color: rgba(255,255,255,.85);
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0,0,0,.5);
+        }
+
+    .h2h-card {
+        padding: 20px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(139, 91, 86, .55), rgba(18, 32, 43, .78)) !important;
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+    .h2h-section-title {
+        margin: 0 0 16px;
+        font-size: 18px;
+        font-weight: 1000;
+        color: #ffffff;
+        text-shadow: 0 3px 12px rgba(0,0,0,.6);
+    }
+
+        .h2h-section-title::after {
+            content: "";
+            display: block;
+            width: 42px;
+            height: 3px;
+            margin-top: 7px;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #fbbf24, #60a5fa);
+        }
+
+    /* FORM */
+    .h2h-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 16px;
+        align-items: end;
+    }
+
+    .h2h-field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 13px;
+        text-shadow: 0 2px 6px rgba(0,0,0,.5);
+    }
+
+    .h2h-select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,.25);
+        background: rgba(0,0,0,.34);
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+        .h2h-select option {
+            background: #12202b;
+            color: #ffffff;
+        }
+
+    .h2h-submit-wrap {
+        display: flex;
+    }
+
+    .h2h-btn {
+        width: 100%;
+        padding: 10px 22px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1a1200;
+        font-weight: 900;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 10px 24px rgba(245,158,11,.35);
+    }
+
+        .h2h-btn:hover {
+            filter: brightness(1.05);
+        }
+
+    /* STATS */
+    .h2h-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .h2h-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 14px;
+        border-radius: 14px;
+        background: rgba(0,0,0,.34);
+        text-align: center;
+    }
+
+    .h2h-stat-label {
+        color: rgba(255,255,255,.8);
+        font-size: 12.5px;
+        font-weight: 700;
+        text-shadow: 0 2px 6px rgba(0,0,0,.5);
+    }
+
+    .h2h-stat-value {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 1000;
+        text-shadow: 0 3px 10px rgba(0,0,0,.6);
+    }
+
+    /* TABLE */
+    .h2h-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 14px;
+    }
+
+    .h2h-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        border-radius: 14px;
+        overflow: hidden;
+        background: transparent !important;
+        min-width: 620px;
+    }
+
+        .h2h-table thead {
+            background: linear-gradient(135deg, rgba(139, 91, 86, .88), rgba(18, 32, 43, .88)) !important;
+        }
+
+            .h2h-table thead th {
+                padding: 12px 10px;
+                color: #ffffff !important;
+                font-size: 13px;
+                font-weight: 1000;
+                text-align: left;
+                text-shadow: 0 2px 8px rgba(0,0,0,.5);
+            }
+
+        .h2h-table td {
+            padding: 10px 10px;
+            font-size: 13.5px;
+            font-weight: 650;
+            color: #ffffff !important;
+            background: rgba(0, 0, 0, .34) !important;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            text-shadow: 0 2px 8px rgba(0,0,0,.75);
+        }
+
+        .h2h-table tbody tr:hover td {
+            background: rgba(255,255,255,.14) !important;
+        }
+
+    .h2h-empty {
+        color: rgba(255,255,255,.85);
+        font-weight: 600;
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    /* MOBILE */
+    @@media (max-width: 768px) {
+        .h2h-header,
+        .h2h-card {
+            width: 94%;
+        }
+
+        .h2h-form {
+            grid-template-columns: 1fr;
+        }
+
+        .h2h-stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+

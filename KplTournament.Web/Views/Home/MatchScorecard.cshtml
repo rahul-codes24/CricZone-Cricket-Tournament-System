@@ -1,0 +1,265 @@
+@*@model Match
+@{
+    ViewData["Title"] = "Scorecard";
+    var batting = ViewBag.Batting as List<BattingScore> ?? new();
+    var bowling = ViewBag.Bowling as List<BowlingScore> ?? new();
+}
+<section class="card">
+    <h1>@Model.TeamA?.Name vs @Model.TeamB?.Name</h1>
+    <p><strong>Toss:</strong> @Model.TossWinner chose to @Model.TossDecision</p>
+    <p><strong>Score:</strong> @Model.TeamA?.ShortName @Model.TeamAScore/@Model.TeamAWickets (@Model.TeamAOvers) | @Model.TeamB?.ShortName @Model.TeamBScore/@Model.TeamBWickets (@Model.TeamBOvers)</p>
+    <p><strong>Result:</strong> @Model.Result</p>
+    <p><strong>Man of the Match:</strong> @Model.ManOfTheMatchPlayer?.Name</p>
+</section>
+<div class="grid two">
+    <section class="card">
+        <h2>Batting Scorecard</h2>
+        <table>
+            <thead><tr><th>Player</th><th>Team</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>Out</th></tr></thead>
+            <tbody>
+            @foreach (var item in batting)
+            {
+                <tr><td>@item.Player?.Name</td><td>@item.Team?.ShortName</td><td>@item.Runs</td><td>@item.Balls</td><td>@item.Fours</td><td>@item.Sixes</td><td>@(item.IsOut ? "Yes" : "No")</td></tr>
+            }
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>Bowling Scorecard</h2>
+        <table>
+            <thead><tr><th>Player</th><th>Team</th><th>O</th><th>R</th><th>W</th><th>M</th></tr></thead>
+            <tbody>
+            @foreach (var item in bowling)
+            {
+                <tr><td>@item.Player?.Name</td><td>@item.Team?.ShortName</td><td>@item.Overs</td><td>@item.RunsGiven</td><td>@item.Wickets</td><td>@item.Maidens</td></tr>
+            }
+            </tbody>
+        </table>
+    </section>
+</div>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="actions">
+        <a class="btn" asp-controller="Admin" asp-action="AddBatting" asp-route-matchId="@Model.Id">Add Batting Row</a>
+        <a class="btn secondary" asp-controller="Admin" asp-action="AddBowling" asp-route-matchId="@Model.Id">Add Bowling Row</a>
+    </div>
+}*@
+
+
+
+
+
+@*
+<section class="card">
+    <h1>Match Scorecard</h1>
+    <p>
+        <span class="badge">Toss: @Model.TossWinnerName chose to @Model.TossDecision</span>
+    </p>
+    <h2>@Model.TeamAName vs @Model.TeamBName</h2>
+    <p>@Model.ResultText</p>
+</section>
+
+<section class="card">
+    <h2>Batting Scorecard</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Batsman</th>
+                <th>Runs</th>
+                <th>Balls</th>
+                <th>4s</th>
+                <th>6s</th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Bowling Scorecard</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Bowler</th>
+                <th>Overs</th>
+                <th>Runs</th>
+                <th>Wickets</th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+</section>
+*@
+
+
+
+
+
+@*
+<section class="card">
+    <h1>Match Scorecard</h1>
+    <p>
+        <span class="badge">Toss: @Model.TossWinner chose to @Model.TossDecision</span>
+    </p>
+    <h2>@Model.TeamA?.Name vs @Model.TeamB?.Name</h2>
+    <p>@Model.ResultText</p>
+</section>
+
+<section class="card">
+    <h2>Batting Scorecard</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Batsman</th>
+                <th>Runs</th>
+                <th>Balls</th>
+                <th>4s</th>
+                <th>6s</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Bowling Scorecard</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Bowler</th>
+                <th>Overs</th>
+                <th>Runs</th>
+                <th>Wickets</th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+</section>*@
+
+
+
+
+@model KplTournament.Web.Models.Match
+
+<section class="card">
+    <h1>Match Scorecard</h1>
+    <p>
+        <span class="badge">Toss: @Model.TossWinner chose to @Model.TossDecision</span>
+    </p>
+    <h2>@Model.TeamA?.Name vs @Model.TeamB?.Name</h2>
+    <p><strong>Venue:</strong> @Model.Venue</p>
+    <p><strong>Date:</strong> @Model.MatchDate.ToString("dd MMM yyyy")</p>
+    <p><strong>Overs Per Innings:</strong> @Model.OversPerInnings</p>
+    <p><strong>Status:</strong> @Model.Status</p>
+    <p><strong>Result:</strong> @(string.IsNullOrWhiteSpace(Model.ResultText) ? "Match result not available" : Model.ResultText)</p>
+</section>
+
+<section class="card">
+    <h2>Team A Innings</h2>
+    <p>
+        <strong>@Model.TeamA?.Name:</strong>
+        @Model.TeamAScore/@Model.TeamAWickets
+        (@Model.TeamAOvers overs)
+    </p>
+</section>
+
+<section class="card">
+    <h2>Team B Innings</h2>
+    <p>
+        <strong>@Model.TeamB?.Name:</strong>
+        @Model.TeamBScore/@Model.TeamBWickets
+        (@Model.TeamBOvers overs)
+    </p>
+</section>
+
+<section class="card">
+    <h2>Batting Scorecard</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Batsman</th>
+                <th>Team</th>
+                <th>Runs</th>
+                <th>Balls</th>
+                <th>4s</th>
+                <th>6s</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.BattingScores != null && Model.BattingScores.Any())
+            {
+                foreach (var item in Model.BattingScores)
+                {
+                    <tr>
+                        <td>@item.Player?.Name</td>
+                        <td>@item.Team?.Name</td>
+                        <td>@item.Runs</td>
+                        <td>@item.Balls</td>
+                        <td>@item.Fours</td>
+                        <td>@item.Sixes</td>
+                        <td>@(item.IsOut ? "Out" : "Not Out")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7">No batting records available.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Bowling Scorecard</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Bowler</th>
+                <th>Team</th>
+                <th>Overs</th>
+                <th>Runs</th>
+                <th>Wickets</th>
+                <th>Maidens</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.BowlingScores != null && Model.BowlingScores.Any())
+            {
+                foreach (var item in Model.BowlingScores)
+                {
+                    <tr>
+                        <td>@item.Player?.Name</td>
+                        <td>@item.Team?.Name</td>
+                        <td>@item.Overs</td>
+                        <td>@item.RunsGiven</td>
+                        <td>@item.Wickets</td>
+                        <td>@item.Maidens</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6">No bowling records available.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Match Awards</h2>
+    <p><strong>Winner:</strong> @(Model.WinnerTeam?.Name ?? "Not Decided")</p>
+    <p><strong>Man of the Match:</strong> @(Model.ManOfTheMatchPlayer?.Name ?? "Not Announced")</p>
+</section>

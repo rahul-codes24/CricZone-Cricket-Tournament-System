@@ -1,0 +1,301 @@
+@model List<KplTournament.Web.ViewModels.PointsTableRowVm>
+
+@{
+    ViewData["Title"] = "Points Table";
+    var rank = 1;
+}
+
+<section class="points-container">
+
+    <section class="points-header">
+        <h1>Points Table</h1>
+    </section>
+
+    <section class="points-card">
+        <div class="table-header-row">
+            <h2 class="table-title">Current Standings</h2>
+        </div>
+
+        <div class="points-table-wrap">
+            <table class="points-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Team</th>
+                        <th>Played</th>
+                        <th>Won</th>
+                        <th>Lost</th>
+                        <th>Points</th>
+                        <th>NRR</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var row in Model)
+                        {
+                            var rowClass = rank == 1 ? "rank-1"
+                                       : rank == 2 ? "rank-2"
+                                       : "";
+
+                            var nrrClass = row.NetRunRate > 0 ? "nrr-positive"
+                                        : row.NetRunRate < 0 ? "nrr-negative"
+                                        : "nrr-zero";
+
+                            <tr class="@rowClass">
+                                <td>
+                                    @if (rank == 1)
+                                    {
+                                        <span class="rank-badge gold-badge">1</span>
+                                    }
+                                    else if (rank == 2)
+                                    {
+                                        <span class="rank-badge silver-badge">2</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="rank-badge">@rank</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="team-name-cell">
+                                        <span class="team-name">@row.TeamName</span>
+                                    </div>
+                                </td>
+
+                                <td>@row.Played</td>
+                                <td>@row.Won</td>
+                                <td>@row.Lost</td>
+                                <td class="points-value">@row.Points</td>
+
+                                <td class="@nrrClass">
+                                    @row.NetRunRate.ToString("+0.00;-0.00;0.00")
+                                </td>
+                            </tr>
+
+                            rank++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="no-data-cell">
+                                No points table data available.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</section>
+
+<style>
+    body {
+        margin: 0;
+    }
+
+    .points-container {
+        min-height: calc(100vh - 70px);
+        padding: 20px 0;
+        background: linear-gradient(rgba(0,0,0,.70), rgba(0,0,0,.70)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .points-header,
+    .points-card {
+        width: 85%;
+        max-width: 1100px;
+        margin: 0 auto 18px;
+    }
+
+    .points-header {
+        padding: 16px;
+        border-radius: 18px;
+        text-align: center;
+        background: linear-gradient( 180deg, rgba(139, 91, 86, .55), rgba(18, 32, 43, .78) ) !important;
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: none !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+        .points-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 1000;
+            color: #ffffff;
+            text-shadow: 0 4px 16px rgba(0,0,0,.6);
+        }
+
+    .points-card {
+        padding: 16px;
+        border-radius: 18px;
+        background: linear-gradient( 180deg, rgba(139, 91, 86, .55), rgba(18, 32, 43, .78) ) !important;
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: none !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+    .table-header-row {
+        margin-bottom: 12px;
+    }
+
+    .table-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 1000;
+        color: #ffffff;
+        text-shadow: 0 3px 12px rgba(0,0,0,.6);
+    }
+
+        .table-title::after {
+            content: "";
+            display: block;
+            width: 42px;
+            height: 3px;
+            margin-top: 7px;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #fbbf24, #60a5fa);
+        }
+
+    .points-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 14px;
+    }
+
+    /* =========================
+           TABLE
+        ========================= */
+
+    .points-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        border-radius: 14px;
+        overflow: hidden;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+        /* =========================
+           PLAIN HEADER ROW
+        ========================= */
+
+        .points-table thead {
+            background: linear-gradient( 135deg, rgba(139, 91, 86, .88), rgba(18, 32, 43, .88) ) !important;
+        }
+
+            .points-table thead th,
+            .points-table th {
+                padding: 12px 8px;
+                background: transparent !important;
+                color: #ffffff !important;
+                font-size: 13px;
+                font-weight: 1000;
+                text-align: center;
+                border: none !important;
+                box-shadow: none !important;
+                text-shadow: 0 2px 8px rgba(0,0,0,.5);
+            }
+
+        /* =========================
+           BODY ROWS
+        ========================= */
+
+        .points-table td,
+        .points-table tbody tr,
+        .points-table tbody tr.rank-1 td,
+        .points-table tbody tr.rank-2 td,
+        .points-table tbody tr:not(.rank-1) td {
+            background: rgba(0, 0, 0, .34) !important;
+            color: #ffffff !important;
+        }
+
+        .points-table td {
+            padding: 10px 8px;
+            font-size: 13.5px;
+            font-weight: 850;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            text-shadow: 0 2px 8px rgba(0,0,0,.75);
+        }
+
+            .points-table td:nth-child(2) {
+                text-align: left;
+            }
+
+        .points-table tbody tr:hover td {
+            background: rgba(255,255,255,.14) !important;
+        }
+
+    /* =========================
+           RANK BADGE
+        ========================= */
+
+    .rank-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.22) !important;
+        color: #ffffff !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 1000;
+    }
+
+    .rank-1 .rank-badge {
+        background: linear-gradient( 135deg, #fbbf24, #f59e0b ) !important;
+    }
+
+    /* =========================
+           TEXT COLORS
+        ========================= */
+
+    .team-name,
+    .points-value,
+    .nrr-zero {
+        color: #ffffff !important;
+        font-weight: 1000;
+    }
+
+    .nrr-positive {
+        color: #86efac !important;
+        font-weight: 900;
+    }
+
+    .nrr-negative {
+        color: #fecaca !important;
+        font-weight: 900;
+    }
+
+    .no-data-cell {
+        color: #ffffff !important;
+        font-weight: 900;
+    }
+
+    /* =========================
+           MOBILE
+        ========================= */
+
+    @@media (max-width: 768px) {
+
+        .points-header,
+        .points-card {
+            width: 94%;
+        }
+
+        .points-table {
+            min-width: 650px;
+        }
+    }
+</style>

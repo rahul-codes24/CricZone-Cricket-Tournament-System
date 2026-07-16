@@ -1,0 +1,70 @@
+@model KplTournament.Web.ViewModels.OtpViewModel
+
+@{
+    ViewData["Title"] = "Verify Registration OTP - CricZone";
+}
+
+<div class="login-page" style="min-height: calc(100vh - 100px); display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div class="login-card" style="width: 100%; max-width: 450px; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 30px; padding: 40px 30px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);">
+        
+        <div class="login-header" style="text-align: center; margin-bottom: 25px;">
+            <div class="login-badge" style="font-size: 32px; width: 64px; height: 64px; border-radius: 50%; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); color: #fbbf24; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15);">🛡️</div>
+            <h1 style="font-size: 24px; font-weight: 900; background: linear-gradient(to right, #ffffff, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px;">Register Verification</h1>
+            <p style="font-size: 13px; color: rgba(255, 255, 255, 0.6); font-weight: 500; line-height: 1.4;">Enter the verification code sent to your mobile number <strong style="color: #fbbf24;">@Model.Email</strong> to complete registration</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="login-validation" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 12px 16px; color: #fca5a5; font-size: 13px; font-weight: 600; margin-bottom: 20px; text-align: center;">
+                ⚠️ @ViewBag.Error
+            </div>
+        }
+
+        @if (TempData["RegDevOtp"] != null)
+        {
+            <div style="background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 14px; padding: 14px; margin-bottom: 22px; text-align: center; color: #fbbf24; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.08);">
+                <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px;">⚡ Developer Test Code:</strong><br />
+                <code style="font-size: 18px; font-weight: 900; letter-spacing: 2px; color: #ffffff; display: block; margin-top: 4px;">@TempData["RegDevOtp"]</code>
+            </div>
+        }
+
+        <form method="post" asp-action="VerifyRegisterOtp" asp-controller="Account" class="login-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Email" />
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 0.8px; margin-bottom: 8px;">Enter 6-Digit OTP</label>
+                <div class="input-wrap" style="position: relative;">
+                    <span class="input-icon" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.7;">🔑</span>
+                    <input asp-for="OtpCode" class="login-input" placeholder="000000" autocomplete="one-time-code" maxlength="6" pattern="\d{6}" required autofocus style="width: 100%; padding: 12px 16px 12px 48px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 800; letter-spacing: 2px; text-align: center; outline: none; transition: border-color 0.25s;" />
+                </div>
+                <span asp-validation-for="OtpCode" class="text-danger" style="font-size: 12px; display: block; margin-top: 5px;"></span>
+            </div>
+
+            <div class="login-extra" style="margin-bottom: 25px; text-align: center;">
+                <span class="secure-note" style="font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 600;">Code expires in 5 minutes</span>
+            </div>
+
+            <button type="submit" class="login-btn" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #fbbf24, #d97706); border: none; border-radius: 12px; color: #0b0f19; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);">Verify & Create Account</button>
+        </form>
+
+        <!-- Back to Dashboard -->
+        <div style="margin-top: 25px; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
+            <a href="/" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: color 0.2s;" onmouseover="this.style.color='#fbbf24'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+                ← Back to Main Dashboard
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .login-input:focus {
+        border-color: #fbbf24 !important;
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.25) !important;
+    }
+    .login-btn:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4) !important;
+    }
+</style>

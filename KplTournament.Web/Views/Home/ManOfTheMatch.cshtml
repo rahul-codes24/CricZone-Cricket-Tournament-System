@@ -1,0 +1,205 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Man of the Match";
+}
+
+<section class="mom-page">
+
+    <div class="mom-hero">
+        <div>
+            
+            <h1>Man of the Match</h1>
+            <p>Best performer from each match</p>
+        </div>
+
+        <div class="mom-icon">
+            <span>?</span>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="mom-table-card">
+            <table class="mom-table">
+                <thead>
+                    <tr>
+                        <th>Match</th>
+                        <th>Date</th>
+                        <th>Player</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="mom-match">@item.MatchTitle</td>
+                            <td>@item.Date.ToString("dd MMM yyyy")</td>
+                            <td class="mom-player">@item.Player</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="mom-empty-card">
+            <h2>No Man of the Match data available</h2>
+            <p>Awards will appear after matches are completed.</p>
+        </div>
+    }
+
+</section>
+<style>
+    /* =========================
+           FULL PAGE BACKGROUND FIX
+        ========================= */
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.35)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    /* =========================
+           MAIN CONTAINER
+        ========================= */
+    .mom-page {
+        width: 100%;
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 12px 16px 26px;
+        box-sizing: border-box;
+        background: transparent;
+    }
+
+    /* =========================
+           HERO (ORANGE CAP STYLE)
+        ========================= */
+    .mom-hero {
+        width: 100%;
+        margin: 0 auto 12px;
+        padding: 24px 30px;
+        min-height: 130px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, rgba(139,91,86,.35), rgba(18,32,43,.45));
+        backdrop-filter: blur(30px);
+        box-shadow: 0 12px 28px rgba(0,0,0,.30);
+        text-align: center;
+    }
+
+    .mom-chip {
+        display: none;
+    }
+
+    .mom-hero h1 {
+        margin: 0;
+        font-size: 36px;
+        font-weight: 900;
+        color: #f9fafb;
+    }
+
+    .mom-hero p {
+        margin: 7px 0 0;
+        font-size: 15px;
+        color: rgba(255,255,255,.85);
+        font-weight: 700;
+    }
+
+    .mom-icon {
+        display: none;
+    }
+
+    /* =========================
+           TABLE CARD (GLASS)
+        ========================= */
+    .mom-table-card {
+        width: 100%;
+        margin: 0 auto;
+        overflow-x: auto;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(60,40,35,.45), rgba(10,20,35,.70));
+        backdrop-filter: blur(30px);
+        border: 1px solid rgba(255,255,255,.10);
+        box-shadow: 0 12px 28px rgba(0,0,0,.30);
+    }
+
+    /* =========================
+           TABLE
+        ========================= */
+    .mom-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 820px;
+    }
+
+        /* HEADER */
+        .mom-table thead tr {
+            background: linear-gradient( 90deg, #1a2433 0%, #223553 32%, #3b2a32 58%, #5a2416 78%, #7a2a14 100% );
+        }
+
+        .mom-table th {
+            padding: 11px 18px;
+            background: transparent;
+            border: none;
+            color: #f9fafb;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: left;
+        }
+
+        /* BODY */
+        .mom-table td {
+            padding: 11px 18px;
+            background: rgba(15,23,42,.55);
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            font-size: 15px;
+            font-weight: 700;
+            color: #e5e7eb;
+        }
+
+        /* HOVER */
+        .mom-table tbody tr:hover td {
+            background: rgba(255,255,255,.10);
+        }
+
+    /* PLAYER */
+    .mom-player {
+        color: #ffffff;
+        font-weight: 800;
+    }
+
+    /* =========================
+           EMPTY STATE
+        ========================= */
+    .mom-empty {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 30px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(60,40,35,.45), rgba(10,20,35,.70));
+        backdrop-filter: blur(30px);
+        color: #ffffff;
+    }
+
+    /* =========================
+           MOBILE
+        ========================= */
+    @@media (max-width: 768px) {
+        .mom-page {
+            padding: 10px;
+        }
+
+        .mom-hero {
+            padding: 20px;
+        }
+
+            .mom-hero h1 {
+                font-size: 32px;
+            }
+    }
+</style>

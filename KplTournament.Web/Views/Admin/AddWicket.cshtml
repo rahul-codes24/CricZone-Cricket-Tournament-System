@@ -1,0 +1,397 @@
+﻿@*@using KplTournament.Web.Models
+
+@{
+    ViewData["Title"] = "Add Wicket";
+
+    var match = ViewBag.Match as Match;
+}
+
+<h2>Add Wicket</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div style="background:#f8d7da;color:#842029;padding:12px 16px;border-radius:8px;margin-bottom:15px;">
+        @TempData["Error"]
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div style="background:#d1e7dd;color:#0f5132;padding:12px 16px;border-radius:8px;margin-bottom:15px;">
+        @TempData["Success"]
+    </div>
+}
+
+@if (match != null)
+{
+    <div style="border:1px solid #ddd;padding:18px;border-radius:12px;margin-bottom:20px;background:#fafafa;">
+        <h3 style="margin-top:0;">@match.TeamA?.Name vs @match.TeamB?.Name</h3>
+        <p><strong>Venue:</strong> @match.Venue</p>
+        <p><strong>Current Innings:</strong> @match.CurrentInnings</p>
+        <p><strong>Score:</strong> @match.CurrentRuns / @match.CurrentWickets</p>
+        <p><strong>Overs:</strong> @match.CurrentOver.@match.CurrentBall</p>
+        <p><strong>Striker:</strong> @(match.Striker?.Name ?? "Not Selected")</p>
+        <p><strong>Non-Striker:</strong> @(match.NonStriker?.Name ?? "Not Selected")</p>
+        <p><strong>Bowler:</strong> @(match.CurrentBowler?.Name ?? "Not Selected")</p>
+    </div>
+}
+
+<div style="border:1px solid #ddd;padding:20px;border-radius:12px;background:#fff;">
+    <form asp-action="AddWicket" asp-controller="Admin" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="matchId" value="@(match?.Id ?? 0)" />
+
+        <div style="margin-bottom:15px;">
+            <label style="display:block;font-weight:600;margin-bottom:6px;">Out Batsman</label>
+            <select name="outBatsmanId" asp-items="ViewBag.OutBatsmanList" class="form-control" required>
+                <option value="">-- Select Out Batsman --</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label style="display:block;font-weight:600;margin-bottom:6px;">Wicket Type</label>
+            <select name="wicketType" id="wicketType" asp-items="ViewBag.WicketTypeList" class="form-control" required>
+                <option value="">-- Select Wicket Type --</option>
+            </select>
+        </div>
+
+        <div id="fielderSection" style="margin-bottom:15px;">
+            <label style="display:block;font-weight:600;margin-bottom:6px;">Fielder</label>
+            <select name="fielderId" asp-items="ViewBag.FielderList" class="form-control">
+                <option value="">-- Select Fielder --</option>
+            </select>
+            <small style="color:#666;">
+                Required for Caught, Run Out, Stumped, and Caught Behind.
+            </small>
+        </div>
+
+        <div id="nextBatsmanSection" style="margin-bottom:15px;">
+            <label style="display:block;font-weight:600;margin-bottom:6px;">Next Batsman</label>
+            <select name="nextBatsmanId" asp-items="ViewBag.NextBatsmanList" class="form-control">
+                <option value="">-- Select Next Batsman --</option>
+            </select>
+            <small style="color:#666;">
+                Select the new batsman who will come after the wicket.
+            </small>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+            <button type="submit" class="btn btn-danger">Save Wicket</button>
+
+            @if (match != null)
+            {
+                <a asp-action="LiveScoring" asp-route-id="@match.Id" class="btn btn-secondary">Back to Live Scoring</a>
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const wicketType = document.getElementById("wicketType");
+        const fielderSection = document.getElementById("fielderSection");
+
+        function toggleFielderSection() {
+            const value = wicketType.value;
+
+            if (value === "Caught" || value === "RunOut" || value === "Stumped" || value === "CaughtBehind") {
+                fielderSection.style.display = "block";
+            } else {
+                fielderSection.style.display = "none";
+            }
+        }
+
+        wicketType.addEventListener("change", toggleFielderSection);
+        toggleFielderSection();
+    </script>
+}*@
+
+
+
+
+
+
+
+
+@*
+
+@model KplTournament.Web.Models.Match
+@using KplTournament.Web.Models
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Add Wicket";
+
+    bool teamABatsFirst =
+        (Model.TossWinner == Model.TeamA?.Name && Model.TossDecision == "Bat") ||
+        (Model.TossWinner == Model.TeamB?.Name && Model.TossDecision == "Bowl");
+
+    var battingTeam = Model.CurrentInnings == 1
+        ? (teamABatsFirst ? Model.TeamA : Model.TeamB)
+        : (teamABatsFirst ? Model.TeamB : Model.TeamA);
+
+    var availableBatsmen = battingTeam?.Players?
+        .Where(p => p.Id != Model.StrikerId && p.Id != Model.NonStrikerId)
+        .OrderBy(p => p.Name)
+        .ToList() ?? new List<Player>();
+}
+
+<h2 class="section-title">Add Wicket</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert-error">@TempData["Error"]</div>
+}
+
+<div class="score-shell">
+    <div class="dark-panel">
+        <div class="panel-head">
+            <h3>@Model.TeamA?.Name vs @Model.TeamB?.Name</h3>
+        </div>
+
+        <div class="panel-body">
+            <div class="current-grid">
+                <div class="info-box">
+                    <div class="info-line"><strong>Venue:</strong> @Model.Venue</div>
+                    <div class="info-line"><strong>Current Innings:</strong> @Model.CurrentInnings</div>
+                    <div class="info-line"><strong>Score:</strong> @Model.CurrentRuns / @Model.CurrentWickets</div>
+                    <div class="info-line"><strong>Overs:</strong> @Model.CurrentOver.@Model.CurrentBall</div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-line"><strong>Striker:</strong> @(Model.Striker?.Name ?? "Not Selected")</div>
+                    <div class="info-line"><strong>Non-Striker:</strong> @(Model.NonStriker?.Name ?? "Not Selected")</div>
+                    <div class="info-line"><strong>Bowler:</strong> @(Model.CurrentBowler?.Name ?? "Not Selected")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notice-card notice-warning">
+        <h4>Wicket Details</h4>
+        <p>Select the batsman who got out, wicket type, and the new batsman.</p>
+
+        <form asp-action="SaveWicket" asp-controller="Admin" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="matchId" value="@Model.Id" />
+
+            <div class="select-grid">
+                <div>
+                    <label><strong>Out Batsman</strong></label>
+                    <select name="outBatsmanId" class="match-select" required>
+                        <option value="">-- Select Out Batsman --</option>
+                        @if (Model.Striker != null)
+                        {
+                            <option value="@Model.Striker.Id">@Model.Striker.Name</option>
+                        }
+                        @if (Model.NonStriker != null)
+                        {
+                            <option value="@Model.NonStriker.Id">@Model.NonStriker.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label><strong>Wicket Type</strong></label>
+                    <select name="wicketType" class="match-select" required>
+                        <option value="">-- Select Wicket Type --</option>
+                        <option value="Bowled">Bowled</option>
+                        <option value="Caught">Caught</option>
+                        <option value="LBW">LBW</option>
+                        <option value="Run Out">Run Out</option>
+                        <option value="Stumped">Stumped</option>
+                        <option value="Hit Wicket">Hit Wicket</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label><strong>Fielder Name (optional)</strong></label>
+                    <input type="text" name="fielderName" class="match-input" placeholder="Enter fielder name if needed" />
+                </div>
+
+                <div>
+                    <label><strong>New Batsman</strong></label>
+                    <select name="newBatsmanId" class="match-select" required>
+                        <option value="">-- Select New Batsman --</option>
+                        @foreach (var player in availableBatsmen)
+                        {
+                            <option value="@player.Id">@player.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <p class="helper-text">Select the new batsman who will come after the wicket.</p>
+
+            <div class="button-row">
+                <button type="submit" class="btn btn-danger">Save Wicket</button>
+                <a asp-action="LiveScoring" asp-controller="Admin" asp-route-id="@Model.Id" class="btn">Back to Live Scoring</a>
+            </div>
+        </form>
+    </div>
+</div>*@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@model KplTournament.Web.Models.Match
+@using KplTournament.Web.Models
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Add Wicket";
+}
+
+@if (Model == null)
+{
+    <div class="alert-error">Match data not found.</div>
+    <a asp-action="Index" asp-controller="Admin" class="btn">Back to Admin</a>
+    return;
+}
+
+@{
+    bool teamABatsFirst =
+        (Model.TossWinner == Model.TeamA?.Name && Model.TossDecision == "Bat") ||
+        (Model.TossWinner == Model.TeamB?.Name && Model.TossDecision == "Bowl");
+
+    var battingTeam = Model.CurrentInnings == 1
+        ? (teamABatsFirst ? Model.TeamA : Model.TeamB)
+        : (teamABatsFirst ? Model.TeamB : Model.TeamA);
+
+    var bowlingTeam = battingTeam?.Id == Model.TeamAId ? Model.TeamB : Model.TeamA;
+
+    var availableBatsmen = battingTeam?.Players?
+        .Where(p => p.Id != Model.StrikerId && p.Id != Model.NonStrikerId)
+        .OrderBy(p => p.Name)
+        .ToList() ?? new List<Player>();
+
+    var fielders = bowlingTeam?.Players?
+        .OrderBy(p => p.Name)
+        .ToList() ?? new List<Player>();
+}
+
+<h2 class="section-title">Add Wicket</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert-error">@TempData["Error"]</div>
+}
+
+<div class="score-shell">
+    <div class="dark-panel">
+        <div class="panel-head">
+            <h3>@Model.TeamA?.Name vs @Model.TeamB?.Name</h3>
+        </div>
+
+        <div class="panel-body">
+            <div class="current-grid">
+                <div class="info-box">
+                    <div class="info-line"><strong>Venue:</strong> @Model.Venue</div>
+                    <div class="info-line"><strong>Current Innings:</strong> @Model.CurrentInnings</div>
+                    <div class="info-line"><strong>Score:</strong> @Model.CurrentRuns / @Model.CurrentWickets</div>
+                    <div class="info-line"><strong>Overs:</strong> @Model.CurrentOver.@Model.CurrentBall</div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-line"><strong>Striker:</strong> @(Model.Striker?.Name ?? "Not Selected")</div>
+                    <div class="info-line"><strong>Non-Striker:</strong> @(Model.NonStriker?.Name ?? "Not Selected")</div>
+                    <div class="info-line"><strong>Bowler:</strong> @(Model.CurrentBowler?.Name ?? "Not Selected")</div>
+                    <div class="info-line"><strong>Batting Team:</strong> @(battingTeam?.Name ?? "N/A")</div>
+                    <div class="info-line"><strong>Bowling Team:</strong> @(bowlingTeam?.Name ?? "N/A")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notice-card notice-warning">
+        <h4>Wicket Details</h4>
+        <p>Select the out batsman, wicket type, fielder if needed, and next batsman.</p>
+
+        <form asp-action="SaveWicket" asp-controller="Admin" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="matchId" value="@Model.Id" />
+
+            <div class="select-grid">
+                <div>
+                    <label><strong>Out Batsman</strong></label>
+                    <select name="outBatsmanId" class="match-select" required>
+                        <option value="">-- Select Out Batsman --</option>
+                        @if (Model.Striker != null)
+                        {
+                            <option value="@Model.Striker.Id">@Model.Striker.Name</option>
+                        }
+                        @if (Model.NonStriker != null)
+                        {
+                            <option value="@Model.NonStriker.Id">@Model.NonStriker.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label><strong>Wicket Type</strong></label>
+                    <select name="wicketType" class="match-select" required>
+                        <option value="">-- Select Wicket Type --</option>
+                        <option value="Bowled">Bowled</option>
+                        <option value="Caught">Caught</option>
+                        <option value="LBW">LBW</option>
+                        <option value="RunOut">Run Out</option>
+                        <option value="Stumped">Stumped</option>
+                        <option value="HitWicket">Hit Wicket</option>
+                        <option value="CaughtBehind">Caught Behind</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label><strong>Fielder (if required)</strong></label>
+                    <select name="fielderId" class="match-select">
+                        <option value="">-- Select Fielder --</option>
+                        @foreach (var player in fielders)
+                        {
+                            <option value="@player.Id">@player.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label><strong>Next Batsman</strong></label>
+                    <select name="nextBatsmanId" class="match-select">
+                        <option value="">-- Select Next Batsman --</option>
+                        @foreach (var player in availableBatsmen)
+                        {
+                            <option value="@player.Id">@player.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <p class="helper-text">
+                For Bowled/LBW/Hit Wicket, fielder is not needed.
+                For Caught, Run Out, Stumped, and Caught Behind, select a fielder.
+            </p>
+
+            <div class="button-row">
+                <button type="submit" class="btn btn-danger">Save Wicket</button>
+                <a asp-action="LiveScoring" asp-controller="Admin" asp-route-id="@Model.Id" class="btn">Back to Live Scoring</a>
+            </div>
+        </form>
+    </div>
+</div>

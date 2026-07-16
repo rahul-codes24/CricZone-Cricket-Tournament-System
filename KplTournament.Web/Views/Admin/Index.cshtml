@@ -1,0 +1,415 @@
+@model IEnumerable<KplTournament.Web.Models.Match>
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<section class="admin-page">
+    <div class="admin-glass-card">
+
+        <div class="admin-actions">
+            <a asp-controller="Admin" asp-action="CreateTeam" class="btn action-btn">Add Team</a>
+
+            <a asp-controller="Admin" asp-action="Teams" class="btn action-btn">View Teams</a>
+
+            <div class="admin-dropdown">
+                <button type="button" class="btn action-btn admin-drop-btn">
+                    Players ▼
+                </button>
+
+                <div class="admin-dropdown-menu">
+                    <a asp-controller="Admin" asp-action="Players">Add Player</a>
+                    <a asp-controller="Admin" asp-action="PlayersList">Players List</a>
+                </div>
+            </div>
+
+            <a asp-controller="Admin" asp-action="CreateMatch" class="btn action-btn">Add Match</a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-success">@TempData["Success"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-danger">@TempData["Error"]</div>
+        }
+
+        <h1 class="section-title">All Matches</h1>
+
+        <div class="match-list">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="admin-match-card">
+                        <h3>@item.TeamA?.Name vs @item.TeamB?.Name</h3>
+
+                        <p>
+                            <strong>Date:</strong> @item.MatchDate.ToString("dd MMM yyyy")
+                        </p>
+
+                        <p>
+                            <strong>Status:</strong> @item.Status
+                        </p>
+
+                        <p>
+                            @if (!string.IsNullOrWhiteSpace(item.ResultText))
+                            {
+                                @item.ResultText
+                            }
+                            else if (!string.IsNullOrWhiteSpace(item.Result))
+                            {
+                                @item.Result
+                            }
+                            else
+                            {
+                                <span>Match not completed yet</span>
+                            }
+                        </p>
+
+                        <div class="match-actions">
+    <a asp-controller="Admin" asp-action="Toss" asp-route-id="@item.Id" class="btn action-btn">
+        Toss
+    </a>
+
+    <a asp-controller="Admin" asp-action="StartMatch" asp-route-id="@item.Id" class="btn action-btn">
+        Start Match
+    </a>
+
+    <a asp-controller="Admin" asp-action="LiveScoring" asp-route-id="@item.Id" class="btn btn-success">
+    Live Scoring
+</a>
+
+
+    <a asp-controller="Admin" asp-action="ViewScorecard" asp-route-id="@item.Id" class="btn action-btn">
+        View Scorecard
+    </a>
+
+    <form asp-controller="Admin"
+          asp-action="DeleteMatch"
+          method="post"
+          style="display:inline;"
+          onsubmit="return confirm('Are you sure you want to delete this match?');">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@item.Id" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+</div>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="empty-text">No matches found.</p>
+            }
+        </div>
+
+    </div>
+</section>
+
+<style>
+    /* =========================
+   BACKGROUND
+========================= */
+.admin-page {
+    min-height: calc(100vh - 80px);
+    padding: 22px 30px;
+
+    background:
+        linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.65)),
+        url('/images/login-bg.png');
+
+    background-size: cover;
+    background-position: center;
+}
+
+
+/* =========================
+   GLASS CONTAINER
+========================= */
+.admin-glass {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 26px;
+    border-radius: 26px;
+
+    background: rgba(15, 23, 42, 0.55);
+
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+
+
+/* =========================
+   TITLE
+========================= */
+.section-title {
+    font-size: 42px;
+    font-weight: 1000;
+    color: #ffffff;
+    margin-bottom: 22px;
+}
+
+
+/* =========================
+   BUTTONS (TOP)
+========================= */
+.admin-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+
+/* Top action buttons - soft bluish theme */
+.action-btn {
+    height: 46px;
+    padding: 0 24px;
+    border-radius: 14px;
+
+    font-size: 15px;
+    font-weight: 900;
+    color: #ffffff !important;
+
+    background: linear-gradient(135deg, #3b82f6, #1e40af) !important; /* soft bluish gradient */
+    box-shadow: 0 10px 25px rgba(59,130,246,.35); /* softer shadow */
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s ease;
+}
+
+.action-btn:hover {
+    background: linear-gradient(135deg, #60a5fa, #2563eb) !important; /* lighter soft blue on hover */
+    color: #facc15 !important; /* gold accent text on hover */
+    transform: translateY(-2px);
+}
+
+
+
+/* =========================
+   DROPDOWN
+========================= */
+.admin-dropdown {
+    position: relative;
+}
+
+.admin-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+
+    min-width: 200px;
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 20px 40px rgba(0,0,0,.3);
+}
+
+.admin-dropdown:hover .admin-dropdown-menu {
+    display: block;
+}
+
+.admin-dropdown-menu a {
+    display: block;
+    padding: 12px 16px;
+    color: #111827;
+    font-weight: 800;
+}
+
+.admin-dropdown-menu a:hover {
+    background: #2563eb;
+    color: #fff;
+}
+
+
+/* =========================
+   MATCH LIST
+========================= */
+.match-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+
+/* =========================
+   MATCH CARD (MAIN FIX)
+========================= */
+.admin-match-card {
+    padding: 18px 22px;
+    border-radius: 20px;
+
+    background:
+        linear-gradient(135deg,
+            rgba(139, 91, 86, 0.85),
+            rgba(15, 23, 42, 0.95)
+        );
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    box-shadow: 0 20px 45px rgba(0,0,0,0.5);
+
+    transition: 0.3s ease;
+}
+
+.admin-match-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 28px 60px rgba(0,0,0,0.65);
+}
+
+
+/* =========================
+   TEXT (FIXED)
+========================= */
+.admin-match-card h3 {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 1000;
+    margin-bottom: 10px;
+
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.admin-match-card p {
+    color: rgba(255,255,255,0.92);
+    font-size: 14px;
+    font-weight: 700;
+    margin: 6px 0;
+}
+
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+.match-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.match-actions .btn {
+    height: 34px;
+    padding: 0 14px;
+
+    border-radius: 999px;
+    border: none;
+
+    font-size: 13px;
+    font-weight: 900;
+    color: white;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 10px 20px rgba(0,0,0,.25);
+}
+
+.match-actions .btn:hover {
+    transform: translateY(-2px);
+}
+
+/* COLORS */
+.btn-warning { background: linear-gradient(135deg,#f59e0b,#ea580c); }
+.btn-primary { background: linear-gradient(135deg,#2563eb,#1d4ed8); }
+.btn-success { background: linear-gradient(135deg,#22c55e,#15803d); }
+.btn-info { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+.btn-danger { background: linear-gradient(135deg,#dc2626,#b91c1c); }
+
+
+/* =========================
+   ALERTS
+========================= */
+.alert-success {
+    background: rgba(34,197,94,.25);
+    color: #bbf7d0;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.alert-danger {
+    background: rgba(239,68,68,.25);
+    color: #fecaca;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+@@media (max-width: 768px) {
+
+    .admin-page {
+        padding: 14px;
+    }
+
+    .admin-glass {
+        padding: 16px;
+    }
+
+    .section-title {
+        font-size: 28px;
+    }
+
+    .action-btn {
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .admin-match-card h3 {
+        font-size: 18px;
+    }
+}
+
+.admin-match-card {
+    background: linear-gradient(
+        135deg,
+        rgba(139, 91, 86, 0.85),
+        rgba(18, 32, 43, 0.96)
+    ) !important;
+
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.5) !important;
+}
+
+.admin-match-card h3,
+.admin-match-card p,
+.admin-match-card strong,
+.admin-match-card span {
+    color: #ffffff !important;
+    text-shadow: none !important;
+}
+
+/* Force Live Scoring button to light green */
+.btn-success {
+    background: linear-gradient(135deg, #86efac, #22c55e) !important; /* light green gradient */
+    color: #111827 !important; /* dark text for contrast */
+    border: none !important;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.25) !important;
+    transition: 0.25s ease;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #bbf7d0, #86efac) !important; /* lighter green on hover */
+    color: #064e3b !important; /* deep green text accent */
+}
+
+
+</style>

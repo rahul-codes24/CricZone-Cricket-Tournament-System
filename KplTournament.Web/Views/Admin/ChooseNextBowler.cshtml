@@ -1,0 +1,22 @@
+﻿@model KplTournament.Web.Models.Match
+
+@{
+    ViewData["Title"] = "Choose Next Bowler";
+}
+
+<h2>Choose Next Over Bowler</h2>
+
+<div class="card p-3">
+    <p><strong>Current Over Completed:</strong> @(Model.CurrentOver)</p>
+
+    <form asp-action="ChooseNextBowler" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="mb-3">
+            <label>Bowler Name</label>
+            <input type="text" name="bowlerName" class="form-control" required />
+        </div>
+
+        <button type="submit" class="btn btn-success">Start Next Over</button>
+    </form>
+</div>

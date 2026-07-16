@@ -1,0 +1,249 @@
+@model List<KplTournament.Web.Models.Player>
+
+@{
+    ViewData["Title"] = "Players";
+}
+
+<section class="toss-page">
+
+    <div class="center-stack">
+
+        <div class="toss-form-card">
+
+            <h2 style="text-align:center; margin-bottom:10px;">Add Player</h2>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="field-error">@TempData["Success"]</div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="field-error">@TempData["Error"]</div>
+            }
+
+            <form asp-action="CreatePlayer" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label>Player Photo</label>
+                    <input type="file" name="photoFile" accept=".jpg,.jpeg,.png,.webp" class="form-input" style="padding:6px 12px;" />
+                </div>
+
+                <div class="form-group">
+                    <label>Name</label>
+                    <input name="Name" class="form-input" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Role</label>
+                    <input name="Role" class="form-input"
+                           placeholder="Batsman / Bowler / All-Rounder / WK" />
+                </div>
+
+                <div class="form-group">
+                    <label>Team</label>
+                    <select name="TeamId" asp-items="ViewBag.Teams" class="form-select"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Batting Style</label>
+                    <input name="BattingStyle" class="form-input"
+                           placeholder="Right Hand / Left Hand" />
+                </div>
+
+                <div class="form-group">
+                    <label>Bowling Style</label>
+                    <input name="BowlingStyle" class="form-input"
+                           placeholder="Fast / Spin" />
+                </div>
+
+                <div class="form-group checkbox-row">
+                    <label>
+                        <input type="radio" name="PlayerRoleRadio" id="addRadioCaptain" value="Captain" onchange="updateAddPlayerRoles()" />
+                        Captain
+                    </label>
+
+                    <label>
+                        <input type="radio" name="PlayerRoleRadio" id="addRadioViceCaptain" value="ViceCaptain" onchange="updateAddPlayerRoles()" />
+                        Vice Captain
+                    </label>
+
+                    <label>
+                        <input type="radio" name="PlayerRoleRadio" id="addRadioRegular" value="Regular" onchange="updateAddPlayerRoles()" checked />
+                        Regular Player
+                    </label>
+
+                    <input type="hidden" name="IsCaptain" id="addHdnIsCaptain" value="false" />
+                    <input type="hidden" name="IsViceCaptain" id="addHdnIsViceCaptain" value="false" />
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-save" type="submit">
+                        Add Player
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+<style>
+
+    /* =========================
+       PLAYERS PAGE - ADD TEAM STYLE
+    ========================= */
+
+    .toss-page {
+        min-height: calc(100vh - 80px);
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .center-stack {
+        width: 100%;
+        max-width: 520px;
+    }
+
+    .toss-form-card {
+        width: 100%;
+        padding: 28px 30px;
+        border-radius: 24px;
+        background: linear-gradient( 180deg, rgba(139, 91, 86, .72), rgba(18, 32, 43, .92) );
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: none;
+        box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+        .toss-form-card h2 {
+            margin: 0 0 22px;
+            text-align: center;
+            color: #ffffff !important;
+            font-size: 34px;
+            font-weight: 1000;
+        }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        height: 48px;
+        padding: 0 18px;
+        border-radius: 999px;
+        border: none;
+        outline: none;
+        background: #ffffff;
+        color: #111827;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+        .form-input::placeholder {
+            color: rgba(17,24,39,0.48);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(96,165,250,.35);
+        }
+
+    .checkbox-row {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        margin-top: 6px;
+    }
+
+        .checkbox-row label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin: 0;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .checkbox-row input {
+            width: 15px;
+            height: 15px;
+            accent-color: #2563eb;
+        }
+
+    .btn-save {
+        width: 100%;
+        height: 50px;
+        margin-top: 6px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #ffffff;
+        font-size: 18px;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 12px 26px rgba(34,197,94,0.38);
+    }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+        }
+
+    .field-error {
+        font-size: 12px;
+        color: #fecaca;
+        margin-bottom: 10px;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    @@media (max-width: 768px) {
+        .center-stack {
+            max-width: 94%;
+        }
+
+        .toss-form-card {
+            padding: 24px 22px;
+        }
+
+            .toss-form-card h2 {
+                font-size: 28px;
+            }
+
+        .form-input,
+        .form-select {
+            height: 44px;
+        }
+    }
+
+</style>
+
+<script>
+    function updateAddPlayerRoles() {
+        var isCaptain = document.getElementById('addRadioCaptain').checked;
+        var isViceCaptain = document.getElementById('addRadioViceCaptain').checked;
+        document.getElementById('addHdnIsCaptain').value = isCaptain ? 'true' : 'false';
+        document.getElementById('addHdnIsViceCaptain').value = isViceCaptain ? 'true' : 'false';
+    }
+</script>

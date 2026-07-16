@@ -1,0 +1,83 @@
+
+@{
+    ViewData["Title"] = "Awards";
+}
+
+<section class="card">
+    <h2>Tournament Awards</h2>
+
+    <div class="grid-2">
+        <div class="card bg-yellow-soft">
+            <h3>Orange Cap (Most Runs)</h3>
+            @if (ViewBag.BestBatsman != null)
+            {
+                <p><strong>@ViewBag.BestBatsman.PlayerName</strong></p>
+                <p>Total Runs: @ViewBag.BestBatsman.TotalRuns</p>
+            }
+            else
+            {
+                <p>No batting data available.</p>
+            }
+        </div>
+
+        <div class="card bg-purple-soft">
+            <h3>Purple Cap (Most Wickets)</h3>
+            @if (ViewBag.BestBowler != null)
+            {
+                <p><strong>@ViewBag.BestBowler.PlayerName</strong></p>
+                <p>Total Wickets: @ViewBag.BestBowler.TotalWickets</p>
+            }
+            else
+            {
+                <p>No bowling data available.</p>
+            }
+        </div>
+
+        <div class="card bg-yellow-soft">
+            <h3>?? Player of the Series</h3>
+            <p>Combined batting, bowling, fielding & MOM impact across the whole tournament.</p>
+            <a asp-controller="Home" asp-action="PlayerOfTheSeries" class="btn btn-success" style="display:inline-block; margin-top:8px;">View Leaderboard</a>
+        </div>
+
+        <div class="card">
+            <h3>Emerging Player</h3>
+            <p>@ViewBag.EmergingPlayer</p>
+        </div>
+
+        <div class="card">
+            <h3>Best Fielder</h3>
+            <p>@ViewBag.BestFielder</p>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Man of the Match Awards</h2>
+
+    @if (ViewBag.MatchAwards != null && ViewBag.MatchAwards.Count > 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Match</th>
+                    <th>Date</th>
+                    <th>Player</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var award in ViewBag.MatchAwards)
+                {
+                    <tr>
+                        <td>@award.MatchTitle</td>
+                        <td>@award.MatchDate.ToString("dd MMM yyyy")</td>
+                        <td>@award.ManOfTheMatch</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No match awards available.</p>
+    }
+</section>

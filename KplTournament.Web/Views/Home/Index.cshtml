@@ -1,0 +1,695 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="home-page premium-home-page">
+
+    <!-- Banner only -->
+    <section class="home-banner"></section>
+
+    <!-- Intro -->
+    <section class="premium-intro-section">
+        <div class="premium-intro-card">
+            
+            <h2 class="premium-section-title">Cricket, Passion, Unity</h2>
+            <p>
+                Cricket is the game of passion and unity, and CricZone brings that spirit to Kerawade by creating a platform for local talent,
+                teamwork, and unforgettable matches, where every player gets a chance to shine and every game creates lasting memories.
+            </p>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    
+
+    <!-- Tournament Stats -->
+    <section class="grid-3 premium-stats-section">
+
+        <!-- Total Sixes -->
+        <div class="stat-card premium-stat-card">
+            <div class="circle-stat purple-circle">
+                <svg viewBox="0 0 120 120">
+                    <circle class="circle-bg" cx="60" cy="60" r="50"></circle>
+                    <circle class="circle-progress six-progress"
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            style="--percent:@ViewBag.SixPercentage;"></circle>
+                </svg>
+
+                <div class="circle-content">
+                    <h3>@ViewBag.TotalSixes</h3>
+                    <span>Sixes</span>
+                </div>
+            </div>
+
+            <h4>Total Sixes</h4>
+            <p>Every six hit in tournament</p>
+        </div>
+
+        <!-- Total Fours -->
+        <div class="stat-card premium-stat-card">
+            <div class="circle-stat yellow-circle">
+                <svg viewBox="0 0 120 120">
+                    <circle class="circle-bg" cx="60" cy="60" r="50"></circle>
+                    <circle class="circle-progress four-progress"
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            style="--percent:@ViewBag.FourPercentage;"></circle>
+                </svg>
+
+                <div class="circle-content">
+                    <h3>@ViewBag.TotalFours</h3>
+                    <span>Fours</span>
+                </div>
+            </div>
+
+            <h4>Total Fours</h4>
+            <p>Boundary fours across matches</p>
+        </div>
+
+        <!-- Total Wickets -->
+        <div class="stat-card premium-stat-card">
+            <div class="circle-stat red-circle">
+                <svg viewBox="0 0 120 120">
+                    <circle class="circle-bg" cx="60" cy="60" r="50"></circle>
+                    <circle class="circle-progress wicket-progress"
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            style="--percent:@ViewBag.WicketPercentage;"></circle>
+                </svg>
+
+                <div class="circle-content">
+                    <h3>@ViewBag.TotalWickets</h3>
+                    <span>Wickets</span>
+                </div>
+            </div>
+
+            <h4>Total Wickets</h4>
+            <p>Wickets taken in tournament</p>
+        </div>
+
+    </section>
+
+
+    <!-- Main content -->
+    <section class="grid-2 premium-home-grid">
+
+     
+
+        <!-- Recent Matches -->
+        <div class="card premium-recent-card">
+            <div class="premium-card-head premium-card-head-row">
+                <div>
+                    <span class="section-badge">Latest Matches</span>
+                    <h2 class="premium-section-title">Recent Matches</h2>
+                </div>
+
+              @*  <a asp-controller="Home" asp-action="Matches" class="mini-link-btn">View All</a>*@
+            </div>
+
+            @if (ViewBag.RecentMatches != null && ViewBag.RecentMatches.Count > 0)
+            {
+                var matchIndex = 0;
+                foreach (var match in ViewBag.RecentMatches)
+                {
+                    var isHidden = matchIndex >= 2;
+                    <div class="premium-match-box @(isHidden ? "hidden-match" : "")">
+                        <div class="premium-match-date">
+                            <span>@match.MatchDate.ToString("dd")</span>
+                            <small>@match.MatchDate.ToString("MMM yyyy").ToUpper()</small>
+                        </div>
+
+                        <div class="premium-match-content">
+                            <h3>
+                                @(match.TeamA?.Name ?? "Team A")
+                                <span>vs</span>
+                                @(match.TeamB?.Name ?? "Team B")
+                            </h3>
+
+                            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                                <div class="match-status-pill">@match.Status</div>
+                                <div class="match-type-pill" style="font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1.5px solid rgba(251, 191, 36, 0.3); border-radius: 99px; padding: 3px 10px; display: inline-block;">@match.MatchType</div>
+                            </div>
+
+                            <div class="premium-match-meta">
+                                <div class="premium-meta-block">
+                                    <small>Result</small>
+                                    <strong>
+                                        @(!string.IsNullOrWhiteSpace(match.ResultText) ? match.ResultText : match.Result)
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="match-card-actions">
+                                <a asp-controller="Home"
+                                       asp-action="ViewScorecard"
+                                       asp-route-id="@match.Id"
+                                       class="btn">
+                                    View Scorecard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    matchIndex++;
+                }
+
+                @if (ViewBag.RecentMatches.Count > 2)
+                {
+                    <div class="view-all-container">
+                        <button onclick="viewAllMatches()" class="btn-view-all">View All</button>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="premium-match-box">
+                    <div class="premium-match-content">
+                        <h3>No recent matches available</h3>
+                        <p>Matches will appear here after admin starts or completes a match.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </section>
+</div>
+
+<style>
+    /* =========================
+   PREMIUM HOME PAGE - CLEAN GLASS FINAL
+========================= */
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.premium-home-page {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-bottom: 42px;
+
+    background:
+        linear-gradient(rgba(5, 15, 30, 0.65), rgba(5, 15, 30, 0.75)),
+        url('/images/stadium.png');
+
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+/* Banner */
+.home-banner {
+    border-radius: 0 0 34px 34px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16);
+    position: relative;
+}
+
+/* Intro position */
+.premium-intro-section {
+    margin-top: -32px !important;
+    position: relative;
+    z-index: 5;
+    margin-bottom: 26px;
+    padding: 0 32px;
+}
+
+/* Common glass style */
+.premium-intro-card,
+.premium-stat-card,
+.premium-recent-card,
+.premium-match-box,
+.premium-meta-block {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(15, 23, 42, 0.72),
+            rgba(30, 41, 59, 0.60)
+        ) !important;
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.20) !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Intro card */
+.premium-intro-card {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 26px 34px;
+    border-radius: 28px;
+    text-align: center;
+}
+
+.section-badge {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 700;
+}
+
+.premium-section-title {
+    font-size: 34px;
+    font-weight: 900;
+    margin: 8px 0 12px;
+    color: #ffffff !important;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+}
+
+.premium-intro-card p {
+    font-size: 17px;
+    line-height: 1.75;
+    color: #ffffff !important;
+    max-width: 980px;
+    margin: 0 auto;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Stats */
+.premium-stats-section {
+    max-width: 1180px;
+    margin: 0 auto 26px;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.premium-stat-card {
+    min-height: 150px !important;
+    padding: 20px 22px !important;
+    border-radius: 22px !important;
+}
+
+.premium-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    margin-bottom: 12px;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.premium-stat-card h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: #ffffff !important;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+}
+
+.premium-stat-card p {
+    font-size: 42px !important;
+    line-height: 1;
+    margin-bottom: 6px !important;
+    color: #3b82f6 !important;
+    text-shadow: none;
+}
+
+.premium-stat-card span {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.82) !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+/* Recent matches */
+.premium-home-grid {
+    max-width: 1180px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: block !important;
+}
+
+.premium-recent-card {
+    width: 100%;
+    padding: 24px !important;
+    border-radius: 26px !important;
+}
+
+.premium-card-head {
+    margin-bottom: 18px;
+}
+
+.premium-card-head .premium-section-title {
+    font-size: 32px;
+    margin-bottom: 0;
+}
+
+/* Match box horizontal */
+.premium-match-box {
+    display: grid !important;
+    grid-template-columns: 82px 1fr;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 18px !important;
+    margin-bottom: 14px;
+    border-radius: 20px !important;
+}
+
+/* Date box */
+.premium-match-date {
+    min-width: 82px !important;
+    width: 82px !important;
+    height: 82px !important;
+    padding: 10px !important;
+    border-radius: 18px !important;
+    text-align: center;
+    color: #ffffff;
+    background: linear-gradient(180deg, #1e293b, #0f172a); /* darker navy */
+    color: #ffffff !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.premium-match-date span {
+    font-size: 28px !important;
+    line-height: 1;
+    font-weight: 900;
+    color: #facc15 !important; /* gold for day number */
+}
+
+.premium-match-date small {
+    margin-top: 5px;
+    font-size: 10px !important;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.95) !important; /* soft white for month/year */
+}
+
+/* Match content horizontal */
+.premium-match-content {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 1fr) 140px 250px 170px;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.premium-match-content h3 {
+    margin: 0 !important;
+    font-size: 23px !important;
+    line-height: 1.25;
+    font-weight: 900;
+    color: #ffffff !important;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+}
+
+.premium-match-content h3 span {
+    font-size: 15px !important;
+    color: rgba(255, 255, 255, 0.90) !important;
+    margin: 0 7px;
+}
+
+/* Status */
+.match-status-pill {
+    width: fit-content;
+    padding: 6px 13px;
+    border-radius: 999px;
+    background: rgba(22, 163, 74, 0.55);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+/* Result */
+.premium-match-meta {
+    display: block !important;
+    margin: 0 !important;
+}
+
+.premium-meta-block {
+    padding: 11px 14px !important;
+    border-radius: 15px !important;
+}
+
+.premium-meta-block small {
+    display: block;
+    font-size: 10px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.premium-meta-block strong {
+    font-size: 14px;
+    line-height: 1.35;
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+/* Button */
+.match-card-actions {
+    justify-self: end;
+}
+
+        .match-card-actions a.btn {
+            padding: 10px 16px !important;
+            border-radius: 13px !important;
+            font-size: 14px !important;
+            font-weight: 900;
+            white-space: nowrap;
+            background: linear-gradient(135deg, #2563eb, #1e40af) !important; /* brighter bluish gradient */
+            color: #ffffff !important; /* white text */
+            border: none !important;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+            transition: 0.25s ease;
+        }
+
+            .match-card-actions a.btn:hover {
+                background: linear-gradient(135deg, #3b82f6, #1e3a8a) !important; /* lighter blue on hover */
+                color: #facc15 !important; /* gold accent text on hover */
+            }
+
+
+
+/* Responsive */
+@@media (max-width: 1200px) {
+    .premium-match-content {
+        grid-template-columns: 1fr 120px 220px;
+    }
+
+    .match-card-actions {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+}
+
+@@media (max-width: 992px) {
+    .premium-intro-section {
+        margin-top: -18px !important;
+    }
+
+    .premium-stats-section {
+        grid-template-columns: 1fr;
+    }
+
+    .premium-match-box {
+        grid-template-columns: 1fr !important;
+    }
+
+    .premium-match-content {
+        grid-template-columns: 1fr !important;
+    }
+
+    .match-card-actions {
+        justify-self: start;
+        grid-column: auto;
+    }
+}
+
+    /* =========================
+       CIRCULAR STATS FINAL
+    ========================= */
+
+    .circle-stat {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 12px;
+    }
+
+        .circle-stat svg {
+            width: 100px;
+            height: 100px;
+            transform: rotate(-90deg);
+            overflow: visible;
+        }
+
+    .circle-bg {
+        fill: none;
+        stroke: rgba(255,255,255,0.10);
+        stroke-width: 10;
+    }
+
+    .circle-progress {
+        fill: none;
+        stroke-width: 10;
+        stroke-linecap: round;
+        stroke-dasharray: 314;
+        stroke-dashoffset: calc(314 - (314 * var(--percent)) / 100);
+        transition: stroke-dashoffset 1s ease;
+    }
+
+    /* Circle Colors */
+    .blue-circle .circle-progress {
+        stroke: #3b82f6;
+    }
+
+    .green-circle .circle-progress {
+        stroke: #22c55e;
+    }
+
+    .orange-circle .circle-progress {
+        stroke: #f97316;
+    }
+
+    .purple-circle .circle-progress {
+        stroke: #8b5cf6;
+    }
+
+    .yellow-circle .circle-progress {
+        stroke: #facc15;
+    }
+
+    .red-circle .circle-progress {
+        stroke: #ef4444;
+    }
+
+    /* Circle Center Content */
+    .circle-content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .circle-content h3 {
+            margin: 0;
+            font-size: 20px !important;
+            font-weight: 800;
+            color: #ffffff !important;
+            line-height: 1;
+        }
+
+        .circle-content span {
+            margin-top: 6px;
+            font-size: 10px !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.75) !important;
+        }
+
+    /* Premium Stat Card */
+    .premium-stat-card {
+        min-height: 180px !important;
+        padding: 16px 14px !important;
+        border-radius: 18px !important;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+        /* Heading */
+        .premium-stat-card h4 {
+            margin-top: 6px;
+            margin-bottom: 4px;
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+        }
+
+        /* Description */
+        .premium-stat-card p {
+            margin: 0 !important;
+            font-size: 12px !important;
+            line-height: 1.4;
+            color: rgba(255,255,255,0.78) !important;
+        }
+
+        /* Hover Effect */
+        .premium-stat-card:hover {
+            transform: translateY(-4px);
+            transition: 0.3s ease;
+        }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+
+        .circle-stat {
+            width: 120px;
+            height: 120px;
+        }
+
+            .circle-stat svg {
+                width: 120px;
+                height: 120px;
+            }
+
+        .circle-content h3 {
+            font-size: 24px !important;
+        }
+
+        .premium-stat-card {
+            min-height: auto !important;
+            padding: 22px 18px !important;
+        }
+    }
+
+    /* Hidden matches CSS */
+    .hidden-match {
+        display: none !important;
+    }
+
+    .view-all-container {
+        text-align: center;
+        margin-top: 24px;
+        margin-bottom: 8px;
+    }
+
+    .btn-view-all {
+        display: inline-block;
+        background: linear-gradient(135deg, #2563eb, #1e40af) !important;
+        color: white !important;
+        padding: 12px 28px !important;
+        border: none !important;
+        border-radius: 14px !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        cursor: pointer;
+        transition: all 0.22s ease !important;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.16) !important;
+    }
+
+    .btn-view-all:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22) !important;
+        background: linear-gradient(135deg, #3b82f6, #1e3a8a) !important;
+    }
+</style>
+
+<script>
+    function viewAllMatches() {
+        document.querySelectorAll('.hidden-match').forEach(function(match) {
+            match.classList.remove('hidden-match');
+        });
+        document.querySelector('.view-all-container').style.display = 'none';
+    }
+</script>

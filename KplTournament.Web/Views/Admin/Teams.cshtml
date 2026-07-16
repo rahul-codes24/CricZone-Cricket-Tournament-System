@@ -1,0 +1,307 @@
+@model List<KplTournament.Web.Models.Team>
+
+@{
+    ViewData["Title"] = "Teams";
+}
+
+<section class="teams-page">
+
+    <div class="teams-glass-card">
+
+        <div class="teams-header">
+            <h1>Teams</h1>
+
+            <a asp-action="CreateTeam" class="add-team-btn">
+                + Add New Team
+            </a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-success">
+                @TempData["Success"]
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-error">
+                @TempData["Error"]
+            </div>
+        }
+
+        <div class="teams-table-wrap">
+            <table class="teams-table">
+                <thead>
+                    <tr>
+                        <th>Team Name</th>
+                        <th>Short Name</th>
+                        <th>Owner</th>
+                        <th>Players</th>
+                        <th>Color</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var team in Model)
+                        {
+                            <tr>
+                                <td>@team.Name</td>
+                                <td>@team.ShortName</td>
+                                <td>@team.OwnerName</td>
+                                <td>@(team.Players?.Count ?? 0)</td>
+                                <td>
+                                    <span class="team-color-dot"
+                                          style="background:@team.PrimaryColor;"></span>
+                                    @team.PrimaryColor
+                                </td>
+                                <td>
+                                    <div class="team-actions">
+                                        <a asp-action="EditTeam"
+                                               asp-route-id="@team.Id"
+                                               class="team-btn team-btn-blue">
+                                            Edit Team
+                                        </a>
+
+                                        <a asp-action="EditTeamPlayers"
+                                               asp-route-id="@team.Id"
+                                               class="team-btn team-btn-orange">
+                                            Edit Players
+                                        </a>
+
+                                        <form asp-action="DeleteTeam"
+                                              asp-route-id="@team.Id"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to delete this team?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="team-btn team-btn-red">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="no-data-cell">
+                                No teams available.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</section>
+
+<style>
+    /* =========================
+       TEAMS PAGE - GLASS (TOSS STYLE)
+    ========================= */
+
+    .teams-page {
+        min-height: calc(100vh - 80px);
+        padding: 18px 28px;
+        background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.45)), url('/images/login-bg.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    /* MAIN GLASS CARD */
+    .teams-glass-card {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 22px 22px 26px;
+        border-radius: 20px;
+        /* PURE GLASS */
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(32px);
+        -webkit-backdrop-filter: blur(32px);
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    }
+
+    /* HEADER */
+    .teams-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+        .teams-header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 34px;
+            font-weight: 1000;
+        }
+
+    /* ADD BUTTON */
+    .add-team-btn {
+        height: 42px;
+        padding: 0 20px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 20px rgba(37,99,235,0.4);
+    }
+
+        .add-team-btn:hover {
+            transform: translateY(-2px);
+        }
+
+    /* TABLE WRAPPER */
+    .teams-table-wrap {
+        overflow-x: auto;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.03);
+    }
+
+    /* TABLE */
+    .teams-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        /* HEADER */
+        .teams-table thead {
+            background: linear-gradient(90deg, #1d4ed8, #2563eb);
+        }
+
+        .teams-table th {
+            padding: 16px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            text-align: left;
+        }
+
+        /* ROWS */
+        .teams-table td {
+            padding: 16px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* ALTERNATE ROW */
+        .teams-table tbody tr:nth-child(even) td {
+            background: rgba(255,255,255,0.06);
+        }
+
+        /* HOVER EFFECT */
+        .teams-table tbody tr:hover td {
+            background: rgba(255,255,255,0.10);
+        }
+
+    /* COLOR DOT */
+    .team-color-dot {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    /* ACTION BUTTONS */
+    .team-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .team-btn {
+        height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: none;
+        font-size: 13px;
+        font-weight: 900;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* BUTTON COLORS */
+    .team-btn-blue {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    .team-btn-orange {
+        background: linear-gradient(135deg, #f59e0b, #ea580c);
+    }
+
+    .team-btn-red {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+
+    /* BUTTON HOVER */
+    .team-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* ALERTS */
+    .alert-success {
+        background: rgba(34,197,94,0.2);
+        color: #bbf7d0;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
+    .alert-error {
+        background: rgba(239,68,68,0.2);
+        color: #fecaca;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* EMPTY STATE */
+    .no-data-cell {
+        text-align: center;
+        padding: 20px;
+        color: #ffffff;
+    }
+
+    /* MOBILE */
+    @@media (max-width: 768px) {
+
+        .teams-page {
+            padding: 12px;
+        }
+
+        .teams-glass-card {
+            padding: 16px;
+        }
+
+        .teams-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+            .teams-header h1 {
+                font-size: 28px;
+            }
+    }
+</style>

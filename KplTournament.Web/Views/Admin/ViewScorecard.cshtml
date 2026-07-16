@@ -1,0 +1,1450 @@
+﻿@*
+@model KplTournament.Web.Models.ViewModels.ScorecardViewModel
+
+@{
+    ViewData["Title"] = "View Scorecard";
+
+    var innings1Balls = Model.Balls?
+        .Where(x => x.InningsNumber == 1)
+        .ToList() ?? new List<KplTournament.Web.Models.ViewModels.BallByBallViewModel>();
+
+    var innings2Balls = Model.Balls?
+        .Where(x => x.InningsNumber == 2)
+        .ToList() ?? new List<KplTournament.Web.Models.ViewModels.BallByBallViewModel>();
+
+    var innings1Overs = innings1Balls
+        .Select(x => x.OverText.Contains('.') ? x.OverText.Substring(0, x.OverText.IndexOf('.')) : x.OverText)
+        .Distinct()
+        .OrderBy(x => int.TryParse(x, out var n) ? n : 0)
+        .ToList();
+
+    var innings2Overs = innings2Balls
+        .Select(x => x.OverText.Contains('.') ? x.OverText.Substring(0, x.OverText.IndexOf('.')) : x.OverText)
+        .Distinct()
+        .OrderBy(x => int.TryParse(x, out var n) ? n : 0)
+        .ToList();
+}
+
+<style>
+    .scorecard-page {
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 0 12px;
+    }
+
+    .scorecard-shell {
+        background: #0f172a;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    }
+
+    .scorecard-top {
+        background: linear-gradient(135deg, #111827, #1f2937);
+        color: #fff;
+        padding: 26px 28px 22px;
+    }
+
+    .scorecard-title {
+        margin: 0 0 10px 0;
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .scorecard-result {
+        font-size: 18px;
+        color: #e5e7eb;
+        margin: 0;
+    }
+
+    .innings-card {
+        background: #ffffff;
+        color: #1f2937;
+        margin: 0;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .innings-header {
+        background: #0f9d7a;
+        color: #ffffff;
+        padding: 18px 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .innings-team {
+        font-size: 22px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    .innings-score {
+        font-size: 20px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .section-title {
+        background: #f3f4f6;
+        color: #1f2937;
+        padding: 14px 18px;
+        font-size: 16px;
+        font-weight: 800;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .score-table-wrap {
+        overflow-x: auto;
+    }
+
+    .score-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+    }
+
+        .score-table th,
+        .score-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .score-table th {
+            background: #f3f4f6;
+            color: #1f2937;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: left;
+        }
+
+        .score-table td {
+            background: #ffffff;
+            color: #1f2937;
+            font-size: 15px;
+        }
+
+        .score-table .num {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .score-table .right {
+            text-align: right;
+        }
+
+    .muted {
+        color: #6b7280;
+    }
+
+    .strong {
+        font-weight: 800;
+    }
+
+    .summary-row td {
+        background: #fafafa;
+        font-size: 15px;
+    }
+
+    .empty-row td {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 18px 0 0;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #2563eb;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 700;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: none;
+    }
+
+        .back-btn:hover {
+            background: #1d4ed8;
+            color: #ffffff;
+        }
+
+    .over-filter-box {
+        padding: 18px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .over-filter-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .over-filter-select {
+        width: 100%;
+        max-width: 260px;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 14px;
+        background: #ffffff;
+        color: #1f2937;
+    }
+
+    .ball-pill-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 18px;
+        background: #ffffff;
+    }
+
+    .ball-pill {
+        min-width: 80px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+    }
+
+    .ball-pill-over {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 4px;
+        font-weight: 700;
+    }
+
+    .ball-pill-result {
+        font-size: 18px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .ball-pill-batsman {
+        font-size: 12px;
+        margin-top: 4px;
+        color: #475569;
+    }
+
+    .ball-row-hidden {
+        display: none;
+    }
+
+    @@media (max-width: 768px) {
+        .scorecard-title {
+            font-size: 22px;
+        }
+
+        .scorecard-result {
+            font-size: 16px;
+        }
+
+        .innings-team {
+            font-size: 18px;
+        }
+
+        .innings-score {
+            font-size: 17px;
+        }
+    }
+</style>
+
+@functions {
+    string GetDisplayOvers(decimal oversValue)
+    {
+        return oversValue.ToString("0.0#");
+    }
+
+    string GetOverOnly(string overText)
+    {
+        if (string.IsNullOrWhiteSpace(overText))
+            return "0";
+
+        int dotIndex = overText.IndexOf('.');
+        return dotIndex >= 0 ? overText.Substring(0, dotIndex) : overText;
+    }
+}
+
+<div class="scorecard-page">
+    <div class="scorecard-shell">
+
+        <div class="scorecard-top">
+            <h1 class="scorecard-title">
+                @(Model.Match?.TeamA?.Name ?? "Team A") vs @(Model.Match?.TeamB?.Name ?? "Team B")
+            </h1>
+            <p class="scorecard-result">
+                @(!string.IsNullOrWhiteSpace(Model.Match?.ResultText) ? Model.Match.ResultText : Model.Match?.Result)
+            </p>
+        </div>
+
+        <!-- INNINGS 1 -->
+        <div class="innings-card">
+            <div class="innings-header">
+                <div class="innings-team">@Model.Innings1.BattingTeamName</div>
+                <div class="innings-score">
+                    @Model.Innings1.TotalRuns-@Model.Innings1.Wickets (@GetDisplayOvers(Model.Innings1.Overs) Ov)
+                </div>
+            </div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Batter</th>
+                            <th style="min-width:220px;">Status</th>
+                            <th class="num">R</th>
+                            <th class="num">B</th>
+                            <th class="num">4s</th>
+                            <th class="num">6s</th>
+                            <th class="num">SR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings1.Batting != null && Model.Innings1.Batting.Any())
+                        {
+                            foreach (var batter in Model.Innings1.Batting)
+                            {
+                                <tr>
+                                    <td class="strong">@batter.PlayerName</td>
+                                    <td>@batter.Status</td>
+                                    <td class="num strong">@batter.Runs</td>
+                                    <td class="num">@batter.Balls</td>
+                                    <td class="num">@batter.Fours</td>
+                                    <td class="num">@batter.Sixes</td>
+                                    <td class="num">@batter.StrikeRate.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="7">No batting data available.</td>
+                            </tr>
+                        }
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Extras</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings1.Extras</span>
+                                <span class="muted">(b @Model.Innings1.Byes, lb @Model.Innings1.LegByes, w @Model.Innings1.Wides, nb @Model.Innings1.NoBalls)</span>
+                            </td>
+                        </tr>
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Total</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings1.TotalRuns-@Model.Innings1.Wickets</span>
+                                <span class="muted">(@GetDisplayOvers(Model.Innings1.Overs) Overs, RR: @Model.Innings1.RunRate.ToString("0.00"))</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Bowling</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Bowler</th>
+                            <th class="num">O</th>
+                            <th class="num">M</th>
+                            <th class="num">R</th>
+                            <th class="num">W</th>
+                            <th class="num">NB</th>
+                            <th class="num">WD</th>
+                            <th class="num">ECO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings1.Bowling != null && Model.Innings1.Bowling.Any())
+                        {
+                            foreach (var bowler in Model.Innings1.Bowling)
+                            {
+                                <tr>
+                                    <td class="strong">@bowler.PlayerName</td>
+                                    <td class="num">@bowler.OversText</td>
+                                    <td class="num">@bowler.Maidens</td>
+                                    <td class="num">@bowler.RunsGiven</td>
+                                    <td class="num strong">@bowler.Wickets</td>
+                                    <td class="num">@bowler.NoBalls</td>
+                                    <td class="num">@bowler.Wides</td>
+                                    <td class="num">@bowler.Economy.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="8">No bowling data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Fall of Wickets</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Player</th>
+                            <th>Wicket Text</th>
+                            <th class="num">Score</th>
+                            <th class="num">Over</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings1.FallOfWickets != null && Model.Innings1.FallOfWickets.Any())
+                        {
+                            foreach (var wicket in Model.Innings1.FallOfWickets)
+                            {
+                                <tr>
+                                    <td class="strong">@wicket.PlayerName</td>
+                                    <td>@wicket.WicketText</td>
+                                    <td class="num">@wicket.TeamScoreAtFall</td>
+                                    <td class="num">@wicket.OverText</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="4">No wicket data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Ball by Ball</div>
+
+            <div class="over-filter-box">
+                <label class="over-filter-label" for="innings1OverFilter">Select Over</label>
+                <select id="innings1OverFilter" class="over-filter-select" onchange="filterOver('innings1', this.value)">
+                    <option value="all">All Overs</option>
+                    @foreach (var over in innings1Overs)
+                    {
+                        <option value="@over">@over</option>
+                    }
+                </select>
+            </div>
+
+            <div id="innings1BallWrap" class="ball-pill-wrap">
+                @if (innings1Balls.Any())
+                {
+                    foreach (var ball in innings1Balls)
+                    {
+                        var overOnly = GetOverOnly(ball.OverText);
+                        <div class="ball-pill innings1-ball" data-over="@overOnly">
+                            <div class="ball-pill-over">@ball.OverText</div>
+                            <div class="ball-pill-result">@ball.ResultText</div>
+                            <div class="ball-pill-batsman">@ball.BatsmanName</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-row">No ball by ball data available.</div>
+                }
+            </div>
+        </div>
+
+        <!-- INNINGS 2 -->
+        <div class="innings-card">
+            <div class="innings-header">
+                <div class="innings-team">@Model.Innings2.BattingTeamName</div>
+                <div class="innings-score">
+                    @Model.Innings2.TotalRuns-@Model.Innings2.Wickets (@GetDisplayOvers(Model.Innings2.Overs) Ov)
+                </div>
+            </div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Batter</th>
+                            <th style="min-width:220px;">Status</th>
+                            <th class="num">R</th>
+                            <th class="num">B</th>
+                            <th class="num">4s</th>
+                            <th class="num">6s</th>
+                            <th class="num">SR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings2.Batting != null && Model.Innings2.Batting.Any())
+                        {
+                            foreach (var batter in Model.Innings2.Batting)
+                            {
+                                <tr>
+                                    <td class="strong">@batter.PlayerName</td>
+                                    <td>@batter.Status</td>
+                                    <td class="num strong">@batter.Runs</td>
+                                    <td class="num">@batter.Balls</td>
+                                    <td class="num">@batter.Fours</td>
+                                    <td class="num">@batter.Sixes</td>
+                                    <td class="num">@batter.StrikeRate.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="7">No batting data available.</td>
+                            </tr>
+                        }
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Extras</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings2.Extras</span>
+                                <span class="muted">(b @Model.Innings2.Byes, lb @Model.Innings2.LegByes, w @Model.Innings2.Wides, nb @Model.Innings2.NoBalls)</span>
+                            </td>
+                        </tr>
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Total</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings2.TotalRuns-@Model.Innings2.Wickets</span>
+                                <span class="muted">(@GetDisplayOvers(Model.Innings2.Overs) Overs, RR: @Model.Innings2.RunRate.ToString("0.00"))</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Bowling</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Bowler</th>
+                            <th class="num">O</th>
+                            <th class="num">M</th>
+                            <th class="num">R</th>
+                            <th class="num">W</th>
+                            <th class="num">NB</th>
+                            <th class="num">WD</th>
+                            <th class="num">ECO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings2.Bowling != null && Model.Innings2.Bowling.Any())
+                        {
+                            foreach (var bowler in Model.Innings2.Bowling)
+                            {
+                                <tr>
+                                    <td class="strong">@bowler.PlayerName</td>
+                                    <td class="num">@bowler.OversText</td>
+                                    <td class="num">@bowler.Maidens</td>
+                                    <td class="num">@bowler.RunsGiven</td>
+                                    <td class="num strong">@bowler.Wickets</td>
+                                    <td class="num">@bowler.NoBalls</td>
+                                    <td class="num">@bowler.Wides</td>
+                                    <td class="num">@bowler.Economy.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="8">No bowling data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Fall of Wickets</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Player</th>
+                            <th>Wicket Text</th>
+                            <th class="num">Score</th>
+                            <th class="num">Over</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings2.FallOfWickets != null && Model.Innings2.FallOfWickets.Any())
+                        {
+                            foreach (var wicket in Model.Innings2.FallOfWickets)
+                            {
+                                <tr>
+                                    <td class="strong">@wicket.PlayerName</td>
+                                    <td>@wicket.WicketText</td>
+                                    <td class="num">@wicket.TeamScoreAtFall</td>
+                                    <td class="num">@wicket.OverText</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="4">No wicket data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Ball by Ball</div>
+
+            <div class="over-filter-box">
+                <label class="over-filter-label" for="innings2OverFilter">Select Over</label>
+                <select id="innings2OverFilter" class="over-filter-select" onchange="filterOver('innings2', this.value)">
+                    <option value="all">All Overs</option>
+                    @foreach (var over in innings2Overs)
+                    {
+                        <option value="@over">@over</option>
+                    }
+                </select>
+            </div>
+
+            <div id="innings2BallWrap" class="ball-pill-wrap">
+                @if (innings2Balls.Any())
+                {
+                    foreach (var ball in innings2Balls)
+                    {
+                        var overOnly = GetOverOnly(ball.OverText);
+                        <div class="ball-pill innings2-ball" data-over="@overOnly">
+                            <div class="ball-pill-over">@ball.OverText</div>
+                            <div class="ball-pill-result">@ball.ResultText</div>
+                            <div class="ball-pill-batsman">@ball.BatsmanName</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-row">No ball by ball data available.</div>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <div class="action-bar">
+        <a asp-controller="Admin" asp-action="Index" class="back-btn">Back to Admin</a>
+    </div>
+</div>
+
+<script>
+    function filterOver(inningsPrefix, selectedOver) {
+        const balls = document.querySelectorAll('.' + inningsPrefix + '-ball');
+
+        balls.forEach(ball => {
+            const ballOver = ball.getAttribute('data-over');
+
+            if (selectedOver === 'all' || ballOver === selectedOver) {
+                ball.style.display = 'block';
+            } else {
+                ball.style.display = 'none';
+            }
+        });
+    }
+</script>*@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@model KplTournament.Web.Models.ViewModels.ScorecardViewModel
+
+@{
+    ViewData["Title"] = "View Scorecard";
+
+    // ✅ MAN OF THE MATCH CALCULATION
+    var allPlayers = new List<dynamic>();
+
+    if (Model.Innings1?.Batting != null)
+    {
+        foreach (var p in Model.Innings1.Batting)
+        {
+            allPlayers.Add(new
+            {
+                Name = p.PlayerName,
+                Runs = p.Runs,
+                Wickets = 0,
+                Score = (p.Runs * 1.0)
+            });
+        }
+    }
+
+    if (Model.Innings2?.Batting != null)
+    {
+        foreach (var p in Model.Innings2.Batting)
+        {
+            allPlayers.Add(new
+            {
+                Name = p.PlayerName,
+                Runs = p.Runs,
+                Wickets = 0,
+                Score = (p.Runs * 1.0)
+            });
+        }
+    }
+
+    if (Model.Innings1?.Bowling != null)
+    {
+        foreach (var p in Model.Innings1.Bowling)
+        {
+            allPlayers.Add(new
+            {
+                Name = p.PlayerName,
+                Runs = 0,
+                Wickets = p.Wickets,
+                Score = (p.Wickets * 25.0)
+            });
+        }
+    }
+
+    if (Model.Innings2?.Bowling != null)
+    {
+        foreach (var p in Model.Innings2.Bowling)
+        {
+            allPlayers.Add(new
+            {
+                Name = p.PlayerName,
+                Runs = 0,
+                Wickets = p.Wickets,
+                Score = (p.Wickets * 25.0)
+            });
+        }
+    }
+
+    var bestPlayer = allPlayers
+        .GroupBy(p => p.Name)
+        .Select(g => new
+        {
+            Name = g.Key,
+            TotalRuns = g.Sum(x => (int)x.Runs),
+            TotalWickets = g.Sum(x => (int)x.Wickets),
+            TotalScore = g.Sum(x => (double)x.Score)
+        })
+        .OrderByDescending(x => x.TotalScore)
+        .FirstOrDefault();
+
+    var innings1Balls = Model.Balls?
+        .Where(x => x.InningsNumber == 1)
+        .ToList() ?? new List<KplTournament.Web.Models.ViewModels.BallByBallViewModel>();
+
+    var innings2Balls = Model.Balls?
+        .Where(x => x.InningsNumber == 2)
+        .ToList() ?? new List<KplTournament.Web.Models.ViewModels.BallByBallViewModel>();
+
+    var innings1Overs = innings1Balls
+        .Select(x => x.OverText.Contains('.') ? x.OverText.Substring(0, x.OverText.IndexOf('.')) : x.OverText)
+        .Distinct()
+        .OrderBy(x => int.TryParse(x, out var n) ? n : 0)
+        .ToList();
+
+    var innings2Overs = innings2Balls
+        .Select(x => x.OverText.Contains('.') ? x.OverText.Substring(0, x.OverText.IndexOf('.')) : x.OverText)
+        .Distinct()
+        .OrderBy(x => int.TryParse(x, out var n) ? n : 0)
+        .ToList();
+}
+
+<style>
+    .scorecard-page {
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 0 12px;
+    }
+
+    .scorecard-shell {
+        background: #0f172a;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    }
+
+    .scorecard-top {
+        background: linear-gradient(135deg, #111827, #1f2937);
+        color: #fff;
+        padding: 26px 28px 22px;
+    }
+
+    .scorecard-title {
+        margin: 0 0 10px 0;
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .scorecard-result {
+        font-size: 18px;
+        color: #e5e7eb;
+        margin: 0;
+    }
+
+    .mom-box {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        color: #111827;
+        padding: 16px 20px;
+        font-weight: 900;
+        text-align: center;
+        font-size: 20px;
+    }
+
+    .innings-card {
+        background: #ffffff;
+        color: #1f2937;
+        margin: 0;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .innings-header {
+        background: #0f9d7a;
+        color: #ffffff;
+        padding: 18px 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .innings-team {
+        font-size: 22px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    .innings-score {
+        font-size: 20px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .section-title {
+        background: #f3f4f6;
+        color: #1f2937;
+        padding: 14px 18px;
+        font-size: 16px;
+        font-weight: 800;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .score-table-wrap {
+        overflow-x: auto;
+    }
+
+    .score-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+    }
+
+        .score-table th,
+        .score-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .score-table th {
+            background: #f3f4f6;
+            color: #1f2937;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: left;
+        }
+
+        .score-table td {
+            background: #ffffff;
+            color: #1f2937;
+            font-size: 15px;
+        }
+
+        .score-table .num {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .score-table .right {
+            text-align: right;
+        }
+
+    .muted {
+        color: #6b7280;
+    }
+
+    .strong {
+        font-weight: 800;
+    }
+
+    .summary-row td {
+        background: #fafafa;
+        font-size: 15px;
+    }
+
+    .empty-row td {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 18px 0 0;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #2563eb;
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 700;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: none;
+    }
+
+        .back-btn:hover {
+            background: #1d4ed8;
+            color: #ffffff;
+        }
+
+    .over-filter-box {
+        padding: 18px;
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .over-filter-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .over-filter-select {
+        width: 100%;
+        max-width: 260px;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 14px;
+        background: #ffffff;
+        color: #1f2937;
+    }
+
+    .ball-pill-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 18px;
+        background: #ffffff;
+    }
+
+    .ball-pill {
+        min-width: 80px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+    }
+
+    .ball-pill-over {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 4px;
+        font-weight: 700;
+    }
+
+    .ball-pill-result {
+        font-size: 18px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .ball-pill-batsman {
+        font-size: 12px;
+        margin-top: 4px;
+        color: #475569;
+    }
+
+    .ball-row-hidden {
+        display: none;
+    }
+
+    @@media (max-width: 768px) {
+        .scorecard-title {
+            font-size: 22px;
+        }
+
+        .scorecard-result {
+            font-size: 16px;
+        }
+
+        .innings-team {
+            font-size: 18px;
+        }
+
+        .innings-score {
+            font-size: 17px;
+        }
+    }
+</style>
+
+@functions {
+    string GetDisplayOvers(decimal oversValue)
+    {
+        return oversValue.ToString("0.0#");
+    }
+
+    string GetOverOnly(string overText)
+    {
+        if (string.IsNullOrWhiteSpace(overText))
+            return "0";
+
+        int dotIndex = overText.IndexOf('.');
+        return dotIndex >= 0 ? overText.Substring(0, dotIndex) : overText;
+    }
+}
+
+<div class="scorecard-page">
+    <div class="scorecard-shell">
+
+        <div class="scorecard-top">
+            <h1 class="scorecard-title">
+                @(Model.Match?.TeamA?.Name ?? "Team A") vs @(Model.Match?.TeamB?.Name ?? "Team B")
+            </h1>
+            <p class="scorecard-result">
+                @(!string.IsNullOrWhiteSpace(Model.Match?.ResultText) ? Model.Match.ResultText : Model.Match?.Result)
+            </p>
+        </div>
+
+        @if (bestPlayer != null)
+        {
+            <div class="mom-box">
+                🏆 Man of the Match: @bestPlayer.Name
+                (@bestPlayer.TotalRuns Runs, @bestPlayer.TotalWickets Wickets)
+            </div>
+        }
+
+        <!-- INNINGS 1 -->
+        <div class="innings-card">
+            <div class="innings-header">
+                <div class="innings-team">@Model.Innings1.BattingTeamName</div>
+                <div class="innings-score">
+                    @Model.Innings1.TotalRuns-@Model.Innings1.Wickets (@GetDisplayOvers(Model.Innings1.Overs) Ov)
+                </div>
+            </div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Batter</th>
+                            <th style="min-width:220px;">Status</th>
+                            <th class="num">R</th>
+                            <th class="num">B</th>
+                            <th class="num">4s</th>
+                            <th class="num">6s</th>
+                            <th class="num">SR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings1.Batting != null && Model.Innings1.Batting.Any())
+                        {
+                            foreach (var batter in Model.Innings1.Batting)
+                            {
+                                <tr>
+                                    <td class="strong">@batter.PlayerName</td>
+                                    <td>@batter.Status</td>
+                                    <td class="num strong">@batter.Runs</td>
+                                    <td class="num">@batter.Balls</td>
+                                    <td class="num">@batter.Fours</td>
+                                    <td class="num">@batter.Sixes</td>
+                                    <td class="num">@batter.StrikeRate.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="7">No batting data available.</td>
+                            </tr>
+                        }
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Extras</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings1.Extras</span>
+                                <span class="muted">(b @Model.Innings1.Byes, lb @Model.Innings1.LegByes, w @Model.Innings1.Wides, nb @Model.Innings1.NoBalls)</span>
+                            </td>
+                        </tr>
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Total</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings1.TotalRuns-@Model.Innings1.Wickets</span>
+                                <span class="muted">(@GetDisplayOvers(Model.Innings1.Overs) Overs, RR: @Model.Innings1.RunRate.ToString("0.00"))</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Bowling</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Bowler</th>
+                            <th class="num">O</th>
+                            <th class="num">M</th>
+                            <th class="num">R</th>
+                            <th class="num">W</th>
+                            <th class="num">NB</th>
+                            <th class="num">WD</th>
+                            <th class="num">ECO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings1.Bowling != null && Model.Innings1.Bowling.Any())
+                        {
+                            foreach (var bowler in Model.Innings1.Bowling)
+                            {
+                                <tr>
+                                    <td class="strong">@bowler.PlayerName</td>
+                                    <td class="num">@bowler.OversText</td>
+                                    <td class="num">@bowler.Maidens</td>
+                                    <td class="num">@bowler.RunsGiven</td>
+                                    <td class="num strong">@bowler.Wickets</td>
+                                    <td class="num">@bowler.NoBalls</td>
+                                    <td class="num">@bowler.Wides</td>
+                                    <td class="num">@bowler.Economy.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="8">No bowling data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Fall of Wickets</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Player</th>
+                            <th>Wicket Text</th>
+                            <th class="num">Score</th>
+                            <th class="num">Over</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings1.FallOfWickets != null && Model.Innings1.FallOfWickets.Any())
+                        {
+                            foreach (var wicket in Model.Innings1.FallOfWickets)
+                            {
+                                <tr>
+                                    <td class="strong">@wicket.PlayerName</td>
+                                    <td>@wicket.WicketText</td>
+                                    <td class="num">@wicket.TeamScoreAtFall</td>
+                                    <td class="num">@wicket.OverText</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="4">No wicket data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Ball by Ball</div>
+
+            <div class="over-filter-box">
+                <label class="over-filter-label" for="innings1OverFilter">Select Over</label>
+                <select id="innings1OverFilter" class="over-filter-select" onchange="filterOver('innings1', this.value)">
+                    <option value="all">All Overs</option>
+                    @foreach (var over in innings1Overs)
+                    {
+                        <option value="@over">@over</option>
+                    }
+                </select>
+            </div>
+
+            <div id="innings1BallWrap" class="ball-pill-wrap">
+                @if (innings1Balls.Any())
+                {
+                    foreach (var ball in innings1Balls)
+                    {
+                        var overOnly = GetOverOnly(ball.OverText);
+                        <div class="ball-pill innings1-ball" data-over="@overOnly">
+                            <div class="ball-pill-over">@ball.OverText</div>
+                            <div class="ball-pill-result">@ball.ResultText</div>
+                            <div class="ball-pill-batsman">@ball.BatsmanName</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-row">No ball by ball data available.</div>
+                }
+            </div>
+        </div>
+
+        <!-- INNINGS 2 -->
+        <div class="innings-card">
+            <div class="innings-header">
+                <div class="innings-team">@Model.Innings2.BattingTeamName</div>
+                <div class="innings-score">
+                    @Model.Innings2.TotalRuns-@Model.Innings2.Wickets (@GetDisplayOvers(Model.Innings2.Overs) Ov)
+                </div>
+            </div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Batter</th>
+                            <th style="min-width:220px;">Status</th>
+                            <th class="num">R</th>
+                            <th class="num">B</th>
+                            <th class="num">4s</th>
+                            <th class="num">6s</th>
+                            <th class="num">SR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings2.Batting != null && Model.Innings2.Batting.Any())
+                        {
+                            foreach (var batter in Model.Innings2.Batting)
+                            {
+                                <tr>
+                                    <td class="strong">@batter.PlayerName</td>
+                                    <td>@batter.Status</td>
+                                    <td class="num strong">@batter.Runs</td>
+                                    <td class="num">@batter.Balls</td>
+                                    <td class="num">@batter.Fours</td>
+                                    <td class="num">@batter.Sixes</td>
+                                    <td class="num">@batter.StrikeRate.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="7">No batting data available.</td>
+                            </tr>
+                        }
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Extras</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings2.Extras</span>
+                                <span class="muted">(b @Model.Innings2.Byes, lb @Model.Innings2.LegByes, w @Model.Innings2.Wides, nb @Model.Innings2.NoBalls)</span>
+                            </td>
+                        </tr>
+
+                        <tr class="summary-row">
+                            <td colspan="6" class="strong">Total</td>
+                            <td class="right">
+                                <span class="strong">@Model.Innings2.TotalRuns-@Model.Innings2.Wickets</span>
+                                <span class="muted">(@GetDisplayOvers(Model.Innings2.Overs) Overs, RR: @Model.Innings2.RunRate.ToString("0.00"))</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Bowling</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Bowler</th>
+                            <th class="num">O</th>
+                            <th class="num">M</th>
+                            <th class="num">R</th>
+                            <th class="num">W</th>
+                            <th class="num">NB</th>
+                            <th class="num">WD</th>
+                            <th class="num">ECO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings2.Bowling != null && Model.Innings2.Bowling.Any())
+                        {
+                            foreach (var bowler in Model.Innings2.Bowling)
+                            {
+                                <tr>
+                                    <td class="strong">@bowler.PlayerName</td>
+                                    <td class="num">@bowler.OversText</td>
+                                    <td class="num">@bowler.Maidens</td>
+                                    <td class="num">@bowler.RunsGiven</td>
+                                    <td class="num strong">@bowler.Wickets</td>
+                                    <td class="num">@bowler.NoBalls</td>
+                                    <td class="num">@bowler.Wides</td>
+                                    <td class="num">@bowler.Economy.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="8">No bowling data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Fall of Wickets</div>
+
+            <div class="score-table-wrap">
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:220px;">Player</th>
+                            <th>Wicket Text</th>
+                            <th class="num">Score</th>
+                            <th class="num">Over</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Innings2.FallOfWickets != null && Model.Innings2.FallOfWickets.Any())
+                        {
+                            foreach (var wicket in Model.Innings2.FallOfWickets)
+                            {
+                                <tr>
+                                    <td class="strong">@wicket.PlayerName</td>
+                                    <td>@wicket.WicketText</td>
+                                    <td class="num">@wicket.TeamScoreAtFall</td>
+                                    <td class="num">@wicket.OverText</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-row">
+                                <td colspan="4">No wicket data available.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Ball by Ball</div>
+
+            <div class="over-filter-box">
+                <label class="over-filter-label" for="innings2OverFilter">Select Over</label>
+                <select id="innings2OverFilter" class="over-filter-select" onchange="filterOver('innings2', this.value)">
+                    <option value="all">All Overs</option>
+                    @foreach (var over in innings2Overs)
+                    {
+                        <option value="@over">@over</option>
+                    }
+                </select>
+            </div>
+
+            <div id="innings2BallWrap" class="ball-pill-wrap">
+                @if (innings2Balls.Any())
+                {
+                    foreach (var ball in innings2Balls)
+                    {
+                        var overOnly = GetOverOnly(ball.OverText);
+                        <div class="ball-pill innings2-ball" data-over="@overOnly">
+                            <div class="ball-pill-over">@ball.OverText</div>
+                            <div class="ball-pill-result">@ball.ResultText</div>
+                            <div class="ball-pill-batsman">@ball.BatsmanName</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-row">No ball by ball data available.</div>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <div class="action-bar">
+        <a asp-controller="Admin" asp-action="Index" class="back-btn">Back to Admin</a>
+    </div>
+</div>
+
+<script>
+    function filterOver(inningsPrefix, selectedOver) {
+        const balls = document.querySelectorAll('.' + inningsPrefix + '-ball');
+
+        balls.forEach(ball => {
+            const ballOver = ball.getAttribute('data-over');
+
+            if (selectedOver === 'all' || ballOver === selectedOver) {
+                ball.style.display = 'block';
+            } else {
+                ball.style.display = 'none';
+            }
+        });
+    }
+</script>

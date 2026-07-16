@@ -1,0 +1,133 @@
+﻿@model KplTournament.Web.Models.ViewModels.InningsScorecardViewModel
+
+<div class="innings-box">
+    <div class="innings-title">
+        <span>@Model.BattingTeamName</span>
+        <span class="innings-summary">@Model.TotalRuns-@Model.Wickets (@Model.Overs Ov)</span>
+    </div>
+
+    <table class="score-table">
+        <thead>
+            <tr>
+                <th>Batter</th>
+                <th>Status</th>
+                <th>R</th>
+                <th>B</th>
+                <th>4s</th>
+                <th>6s</th>
+                <th>SR</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Batting != null && Model.Batting.Any())
+            {
+                foreach (var batter in Model.Batting)
+                {
+                    <tr>
+                        <td>@batter.PlayerName</td>
+                        <td>@batter.Status</td>
+                        <td>@batter.Runs</td>
+                        <td>@batter.Balls</td>
+                        <td>@batter.Fours</td>
+                        <td>@batter.Sixes</td>
+                        <td>@batter.StrikeRate.ToString("0.00")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="muted-row">No batting data available.</td>
+                </tr>
+            }
+
+            <tr>
+                <td colspan="6"><strong>Extras</strong></td>
+                <td class="right-text">
+                    <strong>@Model.Extras</strong>
+                    (b @Model.Byes, lb @Model.LegByes, w @Model.Wides, nb @Model.NoBalls)
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="6"><strong>Total</strong></td>
+                <td class="right-text">
+                    <strong>@Model.TotalRuns-@Model.Wickets</strong>
+                    (@Model.Overs Overs, RR: @Model.RunRate.ToString("0.00"))
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-heading">Bowling</div>
+    <table class="score-table">
+        <thead>
+            <tr>
+                <th>Bowler</th>
+                <th>O</th>
+                <th>M</th>
+                <th>R</th>
+                <th>W</th>
+                <th>NB</th>
+                <th>WD</th>
+                <th>ECO</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Bowling != null && Model.Bowling.Any())
+            {
+                foreach (var bowler in Model.Bowling)
+                {
+                    <tr>
+                        <td>@bowler.PlayerName</td>
+                        <td>@bowler.OversText</td>
+                        <td>@bowler.Maidens</td>
+                        <td>@bowler.RunsGiven</td>
+                        <td>@bowler.Wickets</td>
+                        <td>@bowler.NoBalls</td>
+                        <td>@bowler.Wides</td>
+                        <td>@bowler.Economy.ToString("0.00")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="muted-row">No bowling data available.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="section-heading">Fall of Wickets</div>
+    <table class="score-table">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Wicket Text</th>
+                <th>Score</th>
+                <th>Over</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.FallOfWickets != null && Model.FallOfWickets.Any())
+            {
+                foreach (var item in Model.FallOfWickets)
+                {
+                    <tr>
+                        <td>@item.PlayerName</td>
+                        <td>@item.WicketText</td>
+                        <td>@item.TeamScoreAtFall</td>
+                        <td>@item.OverText</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="muted-row">No wicket data available.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

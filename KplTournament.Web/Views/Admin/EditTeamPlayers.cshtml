@@ -1,0 +1,305 @@
+﻿@model KplTournament.Web.Models.Team
+
+@{
+    ViewData["Title"] = "Edit Team Players";
+    var players = Model.Players?.OrderBy(p => p.Name).ToList() ?? new List<KplTournament.Web.Models.Player>();
+}
+
+<section class="edit-team-players-page">
+
+    <div class="edit-team-players-card">
+
+        <h1>Edit All Players - @Model.Name</h1>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-error">@TempData["Error"]</div>
+        }
+
+        <form asp-action="EditTeamPlayers" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="teamId" value="@Model.Id" />
+
+            <div class="players-table-wrap">
+                <table class="players-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width:200px;">Player Name</th>
+                            <th style="min-width:180px;">Role</th>
+                            <th colspan="4">Status (pick one)</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (players.Any())
+                        {
+                            @for (int i = 0; i < players.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="players[@i].Id" value="@players[i].Id" />
+                                        <input type="text"
+                                               name="players[@i].Name"
+                                               value="@players[i].Name"
+                                               class="form-control"
+                                               required />
+                                    </td>
+
+                                    <td>
+                                        <select name="players[@i].Role" class="form-select">
+                                            <option value="Batsman" selected="@(players[i].Role == "Batsman")">Batsman</option>
+                                            <option value="Bowler" selected="@(players[i].Role == "Bowler")">Bowler</option>
+                                            <option value="All-Rounder" selected="@(players[i].Role == "All-Rounder")">All-Rounder</option>
+                                            <option value="Wicket Keeper" selected="@(players[i].Role == "Wicket Keeper")">Wicket Keeper</option>
+                                        </select>
+                                    </td>
+
+                                    @{
+                                        var currentStatus = players[i].IsCaptain ? "Captain"
+                                            : players[i].IsViceCaptain ? "ViceCaptain"
+                                            : players[i].IsInjured ? "Injured"
+                                            : "None";
+                                    }
+
+                                    <td class="check-cell status-cell">
+                                        <label class="status-radio">
+                                            <input type="radio" name="players[@i].Status" value="Captain" @(currentStatus == "Captain" ? "checked" : "") />
+                                            Captain
+                                        </label>
+                                    </td>
+
+                                    <td class="check-cell status-cell">
+                                        <label class="status-radio">
+                                            <input type="radio" name="players[@i].Status" value="ViceCaptain" @(currentStatus == "ViceCaptain" ? "checked" : "") />
+                                            Vice Captain
+                                        </label>
+                                    </td>
+
+                                    <td class="check-cell status-cell">
+                                        <label class="status-radio">
+                                            <input type="radio" name="players[@i].Status" value="Injured" @(currentStatus == "Injured" ? "checked" : "") />
+                                            Injured
+                                        </label>
+                                    </td>
+
+                                    <td class="check-cell status-cell">
+                                        <label class="status-radio">
+                                            <input type="radio" name="players[@i].Status" value="None" @(currentStatus == "None" ? "checked" : "") />
+                                            None
+                                        </label>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="no-data-cell">No players found for this team.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="player-btn player-btn-green">Save All Changes</button>
+                <a asp-action="Teams" class="player-btn player-btn-purple">Back to Teams</a>
+            </div>
+        </form>
+
+    </div>
+
+</section>
+
+<style>
+    /* =========================
+       EDIT TEAM PLAYERS - TOSS STYLE
+    ========================= */
+
+    .edit-team-players-page {
+        min-height: calc(100vh - 80px);
+        padding: 18px 28px;
+        background: linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.45)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .edit-team-players-card {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 22px 24px 28px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.055);
+        backdrop-filter: blur(32px);
+        -webkit-backdrop-filter: blur(32px);
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 22px 55px rgba(0,0,0,0.45);
+    }
+
+        .edit-team-players-card h1 {
+            margin: 0 0 18px;
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 1000;
+            letter-spacing: .3px;
+        }
+
+    .players-table-wrap {
+        overflow-x: auto;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.03);
+    }
+
+    .players-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .players-table thead {
+            background: linear-gradient(90deg, #1d4ed8, #2563eb);
+        }
+
+        .players-table th {
+            padding: 16px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 900;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .players-table td {
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            color: #ffffff;
+            vertical-align: middle;
+        }
+
+        .players-table tbody tr:nth-child(even) td {
+            background: rgba(255,255,255,0.065);
+        }
+
+        .players-table tbody tr:hover td {
+            background: rgba(255,255,255,0.11);
+        }
+
+    .edit-team-players-page .form-control,
+    .edit-team-players-page .form-select {
+        width: 100%;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: none;
+        outline: none;
+        background: #ffffff;
+        color: #111827;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+        .edit-team-players-page .form-control:focus,
+        .edit-team-players-page .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(96,165,250,0.35);
+        }
+
+    .check-cell {
+        text-align: center;
+    }
+
+        .check-cell input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #2563eb;
+        }
+
+    .status-radio {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+        .status-radio input[type="radio"] {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: #2563eb;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+    }
+
+    .player-btn {
+        height: 42px;
+        padding: 0 22px;
+        border-radius: 999px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .player-btn-green {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        box-shadow: 0 10px 22px rgba(34,197,94,0.35);
+    }
+
+    .player-btn-purple {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        box-shadow: 0 10px 22px rgba(124,58,237,0.35);
+    }
+
+    .player-btn:hover {
+        transform: translateY(-2px);
+        color: #ffffff;
+    }
+
+    .alert-error {
+        margin-bottom: 14px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(239,68,68,0.22);
+        color: #fecaca;
+        font-weight: 700;
+    }
+
+    .no-data-cell {
+        text-align: center;
+        padding: 22px !important;
+        color: #ffffff;
+    }
+
+    @@media (max-width: 768px) {
+        .edit-team-players-page {
+            padding: 12px;
+        }
+
+        .edit-team-players-card {
+            padding: 18px;
+        }
+
+            .edit-team-players-card h1 {
+                font-size: 24px;
+            }
+
+        .player-btn {
+            width: 100%;
+        }
+    }
+</style>

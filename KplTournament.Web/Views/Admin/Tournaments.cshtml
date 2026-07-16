@@ -1,0 +1,75 @@
+@model List<KplTournament.Web.Models.Tournament>
+
+@{
+    ViewData["Title"] = "My Tournaments";
+}
+
+<section class="teams-page">
+    <div class="teams-glass-card">
+        <div class="teams-header">
+            <h1>My Tournaments</h1>
+            <a asp-action="CreateTournament" class="add-team-btn" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                + Create New Tournament
+            </a>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-success">@TempData["Success"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-error">@TempData["Error"]</div>
+        }
+
+        <div class="teams-table-wrap">
+            <table class="teams-table">
+                <thead>
+                    <tr>
+                        <th>Tournament Name</th>
+                        <th>Venue</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="font-weight: 800; color: #ffffff;">@item.Name</td>
+                                <td>@item.Venue</td>
+                                <td>@item.StartDate.ToString("dd MMM yyyy")</td>
+                                <td>@item.EndDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <a asp-action="SelectTournament" asp-route-id="@item.Id" class="add-team-btn" style="padding: 6px 12px; font-size: 13px; text-decoration: none; display: inline-block;">
+                                            ⚡ Manage
+                                        </a>
+                                        <form asp-action="DeleteTournament" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this tournament? This will permanently delete all associated teams, matches, players, and stats from everywhere.');" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="add-team-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 6px 12px; font-size: 13px; border: none; cursor: pointer;">
+                                                🗑️ Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: rgba(255,255,255,0.6); padding: 40px 10px;">
+                                You haven't created any tournaments yet.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,288 @@
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us - CricZone</title>
+    
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, rgba(8, 12, 24, 0.35), rgba(15, 23, 42, 0.55)), url('/images/banners/criczone_banner_c6.png') center/cover no-repeat fixed;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Glassmorphic Header */
+        .landing-header {
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 0;
+            z-index: 1000;
+        }
+
+        .landing-logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .landing-logo img {
+            height: 54px;
+            border-radius: 50%;
+            filter: drop-shadow(0 2px 8px rgba(251, 191, 36, 0.4));
+        }
+
+        .contact-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 26px;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .contact-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fbbf24;
+            color: #fbbf24;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.25);
+        }
+
+        /* Main container centered contact card */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 20px 60px 20px;
+            width: 100%;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .contact-card {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 580px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .contact-card:hover {
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .contact-card h2 {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ffffff, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .contact-card p.sub {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 15px;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        .contact-info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-align: left;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .info-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(251, 191, 36, 0.15);
+        }
+
+        .info-icon {
+            font-size: 26px;
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .info-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+        }
+
+        .info-val {
+            font-size: 17px;
+            font-weight: 600;
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a.info-val:hover {
+            color: #fbbf24;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fbbf24;
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+        }
+
+        @@media (max-width: 768px) {
+            .landing-header {
+                padding: 15px 4%;
+            }
+            .landing-logo h1 {
+                font-size: 18px;
+            }
+            main {
+                padding-top: 100px;
+            }
+            .contact-card {
+                padding: 35px 24px;
+            }
+            .contact-card h2 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="landing-header">
+        <div style="width: 90%; max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" class="landing-logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: inherit;">
+                <img src="/images/criczone_logo_c6.png" alt="CricZone Logo">
+                <div>
+                    <h1 style="font-size: 22px; font-weight: 900; color: #ffffff !important; margin: 0; padding: 0; letter-spacing: 0.4px; text-shadow: 0 3px 12px rgba(0,0,0,0.75);">CricZone</h1>
+                    <div style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.92) !important; margin-top: 2px; text-shadow: 0 2px 8px rgba(0,0,0,0.7);">Feel the Passion, Live the Game</div>
+                </div>
+            </a>
+            <a href="/" class="contact-btn">
+                ← Back to Arena
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="contact-card">
+            <h2>Contact CricZone</h2>
+            <p class="sub">Get in touch with us for inquiries, partnerships, or support.</p>
+            
+            <div class="contact-info-list">
+                <div class="info-item">
+                    <div class="info-icon">✉️</div>
+                    <div class="info-details">
+                        <span class="info-label">Email Address</span>
+                        <a href="mailto:support@criczone.com" class="info-val">support@criczone.com</a>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">📞</div>
+                    <div class="info-details">
+                        <span class="info-label">Mobile Number</span>
+                        <a href="tel:+15559876543" class="info-val">+1 (555) 987-6543</a>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <a href="/" class="back-btn">
+                ← Go back to Dashboard
+            </a>
+        </div>
+    </main>
+
+</body>
+</html>

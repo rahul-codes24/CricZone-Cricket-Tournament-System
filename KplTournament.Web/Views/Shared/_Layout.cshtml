@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CricZone Tournament</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="container nav-wrap">
+            <a href="/" class="brand" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: inherit;">
+                <div class="brand-logo">
+                    <img src="/images/criczone_logo_c6.png" alt="CricZone Logo">
+                </div>
+                <div>
+					<div class="brand-title">CricZone</div>
+                    <div class="brand-subtitle">Feel the Passion, Live the Game</div>
+                </div>
+            </a>
+
+            <nav class="main-nav">
+                @{
+                    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                    var isAdminArea = string.Equals(currentController, "Admin", StringComparison.OrdinalIgnoreCase);
+                    var isAccountArea = string.Equals(currentController, "Account", StringComparison.OrdinalIgnoreCase);
+                    var isPublicHome = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase) && 
+                                       string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
+                }
+
+                @if (isAdminArea)
+                {
+                    <a asp-controller="Admin" asp-action="Index" style="font-weight: 800; color: #fbbf24;">🛠️ Admin Panel</a>
+                    <a asp-controller="Admin" asp-action="Tournaments" style="font-weight: 700;">🏆 My Tournaments</a>
+                    <a asp-controller="Account" asp-action="Logout" style="color: #ef4444;">🚪 Logout</a>
+                }
+                else
+                {
+                    @if (!isAccountArea)
+                    {
+                        <a asp-controller="Home" asp-action="Index">Home</a>
+                        <a asp-controller="Home" asp-action="PointsTable">Points Table</a>
+                        <a asp-controller="Home" asp-action="Teams">Teams</a>
+                        <a asp-controller="Home" asp-action="HeadToHead">⚔️ Head to Head</a>
+
+                        <div class="dropdown">
+                            <button class="dropbtn" type="button">Awards ▼</button>
+                            <div class="dropdown-content">
+                                <a asp-controller="Home" asp-action="OrangeCap">🟠 Orange Cap</a>
+                                <a asp-controller="Home" asp-action="PlayerOfTheSeries">🏆 Player of the Series</a>
+                                <a asp-controller="Home" asp-action="PurpleCap">🟣 Purple Cap</a>
+                                <a asp-controller="Home" asp-action="MostSixes">💥 Most Sixes</a>
+                                <a asp-controller="Home" asp-action="ManOfTheMatch">⭐ Man of the Match</a>
+                                <a asp-controller="Home" asp-action="BestFielder">🧤 Best Fielder</a>
+                            </div>
+                        </div>
+
+                    }
+                }
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content home-full-bg">
+        @{
+            var isPublicView = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase);
+            var isDashboardOrLanding = string.Equals(currentController, "Landing", StringComparison.OrdinalIgnoreCase) || 
+                                       (isAdminArea && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase));
+        }
+
+        @if (isPublicView)
+        {
+            <button onclick="location.href='/'" class="btn-back-floating" title="Back to Tournaments">
+                ◀ Back to Tournaments
+            </button>
+        }
+        else if (!isDashboardOrLanding && !isAccountArea)
+        {
+            <button onclick="window.history.back()" class="btn-back-floating" title="Back">
+                Back
+            </button>
+        }
+        @RenderBody()
+    </main>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

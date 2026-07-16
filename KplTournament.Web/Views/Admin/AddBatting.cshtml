@@ -1,0 +1,15 @@
+@{ ViewData["Title"] = "Add Batting"; }
+<section class="form-card">
+    <h1>Add Batting Row</h1>
+    <form method="post">
+        <input type="hidden" name="MatchId" value="@ViewBag.MatchId" />
+        <label>Player</label><select name="PlayerId" asp-items="ViewBag.Players"></select>
+        <label>Team</label><select name="TeamId" asp-items="ViewBag.Teams"></select>
+        <label>Runs</label><input name="Runs" />
+        <label>Balls</label><input name="Balls" />
+        <label>Fours</label><input name="Fours" />
+        <label>Sixes</label><input name="Sixes" />
+        <label><input type="checkbox" name="IsOut" /> Out</label>
+        <button class="btn" type="submit">Save Batting</button>
+    </form>
+</section>

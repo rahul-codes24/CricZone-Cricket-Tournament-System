@@ -1,0 +1,1030 @@
+﻿
+@model KplTournament.Web.Models.Match
+@using KplTournament.Web.Models
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Live Scoring";
+}
+
+@if (Model == null)
+{
+    <div class="alert-error">Match data not found.</div>
+    <a asp-action="Index" asp-controller="Admin" class="btn">Back to Admin</a>
+    return;
+}
+
+@{
+    bool teamABatsFirst =
+        (Model.TossWinner == Model.TeamA?.Name && Model.TossDecision == "Bat") ||
+        (Model.TossWinner == Model.TeamB?.Name && Model.TossDecision == "Bowl");
+
+    var battingTeam = Model.CurrentInnings == 1
+        ? (teamABatsFirst ? Model.TeamA : Model.TeamB)
+        : (teamABatsFirst ? Model.TeamB : Model.TeamA);
+
+    var bowlingTeam = battingTeam?.Id == Model.TeamAId ? Model.TeamB : Model.TeamA;
+
+    var nextBowlerList = bowlingTeam?.Players?
+        .OrderBy(p => p.Name)
+        .ToList() ?? new List<Player>();
+
+    var balls = Model.BallByBalls?
+        .Where(b => b.InningsNumber == Model.CurrentInnings)
+        .OrderByDescending(b => b.Id)
+        .ToList() ?? new List<BallByBall>();
+
+    Team? secondInningsBattingTeam;
+    Team? secondInningsBowlingTeam;
+
+    if (teamABatsFirst)
+    {
+        secondInningsBattingTeam = Model.TeamB;
+        secondInningsBowlingTeam = Model.TeamA;
+    }
+    else
+    {
+        secondInningsBattingTeam = Model.TeamA;
+        secondInningsBowlingTeam = Model.TeamB;
+    }
+
+    var secondInningsBattingPlayers = secondInningsBattingTeam?.Players?
+        .OrderBy(p => p.Name) ?? Enumerable.Empty<Player>();
+
+    var secondInningsBowlingPlayers = secondInningsBowlingTeam?.Players?
+        .OrderBy(p => p.Name) ?? Enumerable.Empty<Player>();
+
+    var resultText = string.IsNullOrWhiteSpace(Model.ResultText) ? "Match in progress" : Model.ResultText;
+
+    bool isTeamAWinner = Model.WinnerTeamId.HasValue && Model.WinnerTeamId.Value == Model.TeamAId;
+    bool isTeamBWinner = Model.WinnerTeamId.HasValue && Model.WinnerTeamId.Value == Model.TeamBId;
+
+    var battingPlayers = battingTeam?.Players?
+        .OrderBy(p => p.Name)
+        .ToList() ?? new List<Player>();
+
+    var fieldingPlayers = bowlingTeam?.Players?
+        .OrderBy(p => p.Name)
+        .ToList() ?? new List<Player>();
+
+    var currentBatsmanIds = new List<int>();
+
+    if (Model.StrikerId.HasValue)
+    {
+        currentBatsmanIds.Add(Model.StrikerId.Value);
+    }
+
+    if (Model.NonStrikerId.HasValue)
+    {
+        currentBatsmanIds.Add(Model.NonStrikerId.Value);
+    }
+
+    var remainingBatsmen = battingPlayers
+        .Where(p => !currentBatsmanIds.Contains(p.Id))
+        .ToList();
+
+    bool needsNextBatsman = !Model.IsInningsCompleted
+                            && Model.Status != "Completed"
+                            && (Model.StrikerId == null || Model.NonStrikerId == null)
+                            && Model.CurrentWickets < 10;
+}
+
+<div class="live-scoring-page">
+    <div class="score-shell">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-success">@TempData["Success"]</div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-error">@TempData["Error"]</div>
+        }
+
+        <div class="score-header-card">
+            <div class="score-header-top">
+                <div>
+                    <h2 class="score-match-title">@Model.TeamA?.Name vs @Model.TeamB?.Name</h2>
+                    <p class="score-match-meta">
+                        <strong>Venue:</strong> @Model.Venue
+                        <span class="meta-divider">|</span>
+                        <strong>Date:</strong> @Model.MatchDate.ToString("dd MMM yyyy")
+                        <span class="meta-divider">|</span>
+                        <strong>Overs:</strong> @Model.OversPerInnings
+                    </p>
+                </div>
+            </div>
+
+            <div class="score-status-row @(Model.Status == "Completed" ? "completed" : "live")">
+                <div>
+                    <div class="mini-label">Match Status</div>
+                    <div class="big-status">@Model.Status</div>
+                </div>
+
+                <div class="score-result-box">
+                    <div class="mini-label">Result</div>
+                    <div class="result-pill @(Model.Status == "Completed" ? "result-completed" : "result-live")">
+                        @resultText
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-score-grid">
+            <div class="team-score-card compact-score-card">
+                <div class="team-score-top">
+                    <div>
+                        <div class="mini-label blue-text">Team A</div>
+                        <h3 class="team-name">@Model.TeamA?.Name</h3>
+                    </div>
+
+                    @if (isTeamAWinner)
+                    {
+                        <span class="winner-badge">Winner</span>
+                    }
+                </div>
+
+                <div class="score-number">@Model.TeamAScore/@Model.TeamAWickets</div>
+                <div class="team-over-text">Overs: <strong>@Model.TeamAOvers</strong></div>
+            </div>
+
+            <div class="team-score-card compact-score-card">
+                <div class="team-score-top">
+                    <div>
+                        <div class="mini-label blue-text">Team B</div>
+                        <h3 class="team-name">@Model.TeamB?.Name</h3>
+                    </div>
+
+                    @if (isTeamBWinner)
+                    {
+                        <span class="winner-badge">Winner</span>
+                    }
+                </div>
+
+                <div class="score-number">@Model.TeamBScore/@Model.TeamBWickets</div>
+                <div class="team-over-text">Overs: <strong>@Model.TeamBOvers</strong></div>
+            </div>
+        </div>
+
+        <div class="dark-panel">
+            <div class="panel-head">
+                <h3>Current Innings</h3>
+            </div>
+
+            <div class="panel-body">
+                <div class="current-grid">
+                    <div class="info-box innings-box">
+                        <div class="mini-label blue-text">Batting Team</div>
+                        <div class="info-title">@(battingTeam?.Name ?? "Batting Team")</div>
+                        <div class="live-score-main">@Model.CurrentRuns/@Model.CurrentWickets</div>
+                        <div class="info-line">Overs: <strong>@Model.CurrentOver.@Model.CurrentBall</strong></div>
+                        <div class="info-line">Target: <strong>@(Model.Target?.ToString() ?? "N/A")</strong></div>
+                        <div class="info-line">CRR: <strong>@Model.CurrentRunRate</strong>@(Model.RequiredRunRate.HasValue ? $"   RRR: {Model.RequiredRunRate}" : "")</div>
+                        @if (Model.Striker != null && Model.NonStriker != null)
+                        {
+                            <div class="info-line">Partnership: <strong>@Model.PartnershipText</strong></div>
+                        }
+                    </div>
+
+                    <div class="info-box field-box">
+                        <div class="mini-label blue-text">Players On Field</div>
+
+                        <div class="field-row">
+                            <div class="field-label">Striker</div>
+                            <span class="player-pill player-green">@(Model.Striker?.Name ?? "Waiting for Next Batsman")</span>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-label">Non-Striker</div>
+                            <span class="player-pill player-blue">@(Model.NonStriker?.Name ?? "Waiting for Next Batsman")</span>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-label">Current Bowler</div>
+                            <span class="player-pill player-yellow">@(Model.CurrentBowler?.Name ?? "Not Selected")</span>
+                        </div>
+
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (needsNextBatsman)
+        {
+            <div class="dark-panel next-batsman-panel">
+                <div class="panel-head">
+                    <h3>Select Next Batsman</h3>
+                </div>
+
+                <div class="panel-body">
+                    <p class="wicket-subtext">
+                        Wicket has been added successfully. Please select the next batsman to continue scoring.
+                    </p>
+
+                    <form asp-action="SelectNextBatsman" asp-controller="Admin" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="matchId" value="@Model.Id" />
+
+                        <div class="stack-form next-batsman-form">
+                            <label><strong>Next Batsman</strong></label>
+                            <select name="nextBatsmanId" class="match-select" required>
+                                <option value="">-- Select Next Batsman --</option>
+                                @foreach (var player in remainingBatsmen)
+                                {
+                                    <option value="@player.Id">@player.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="wicket-action-row">
+                            <button type="submit" class="btn btn-success">Save Next Batsman</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (!Model.IsInningsCompleted && Model.Status != "Completed")
+        {
+            <div class="action-grid">
+
+                <div class="dark-panel">
+                    <div class="panel-head">
+                        <h4>Runs</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="run-buttons">
+                            @for (int i = 0; i <= 6; i++)
+                            {
+                                <form asp-action="AddRun" asp-controller="Admin" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="matchId" value="@Model.Id" />
+                                    <input type="hidden" name="runs" value="@i" />
+                                    <button type="submit" class="btn" @(needsNextBatsman ? "disabled" : null)>@i</button>
+                                </form>
+                            }
+                        </div>
+
+                        <form asp-action="AddDotBall" asp-controller="Admin" method="post" class="mt-12">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="matchId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-purple full-btn" @(needsNextBatsman ? "disabled" : null)>Dot Ball</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="dark-panel">
+                    <div class="panel-head">
+                        <h4>Extras</h4>
+                    </div>
+                    <div class="panel-body">
+                        <form asp-action="AddWide" asp-controller="Admin" method="post" class="stack-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="matchId" value="@Model.Id" />
+                            <label><strong>Wide Extra Runs</strong></label>
+                            <select name="extraRuns" class="match-select" @(needsNextBatsman ? "disabled" : null)>
+                                <option value="0">1 Wide</option>
+                                <option value="1">2 Runs Total</option>
+                                <option value="2">3 Runs Total</option>
+                                <option value="3">4 Runs Total</option>
+                                <option value="4">5 Runs Total</option>
+                            </select>
+                            <button type="submit" class="btn btn-warning full-btn" @(needsNextBatsman ? "disabled" : null)>Add Wide</button>
+                        </form>
+
+                        <form asp-action="AddNoBall" asp-controller="Admin" method="post" class="stack-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="matchId" value="@Model.Id" />
+                            <label><strong>No Ball + Bat Runs</strong></label>
+                            <select name="batRuns" class="match-select" @(needsNextBatsman ? "disabled" : null)>
+                                <option value="0">Only No Ball</option>
+                                <option value="1">1 Bat Run</option>
+                                <option value="2">2 Bat Runs</option>
+                                <option value="3">3 Bat Runs</option>
+                                <option value="4">4 Bat Runs</option>
+                                <option value="6">6 Bat Runs</option>
+                            </select>
+                            <button type="submit" class="btn btn-warning full-btn" @(needsNextBatsman ? "disabled" : null)>Add No Ball</button>
+                        </form>
+
+                        <form asp-action="AddBye" asp-controller="Admin" method="post" class="stack-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="matchId" value="@Model.Id" />
+                            <label><strong>Bye Runs</strong></label>
+                            <select name="runs" class="match-select" @(needsNextBatsman ? "disabled" : null)>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                            <button type="submit" class="btn btn-success full-btn" @(needsNextBatsman ? "disabled" : null)>Add Bye</button>
+                        </form>
+
+                        <form asp-action="AddLegBye" asp-controller="Admin" method="post" class="stack-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="matchId" value="@Model.Id" />
+                            <label><strong>Leg Bye Runs</strong></label>
+                            <select name="runs" class="match-select" @(needsNextBatsman ? "disabled" : null)>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                            <button type="submit" class="btn btn-success full-btn" @(needsNextBatsman ? "disabled" : null)>Add Leg Bye</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="dark-panel">
+                    <div class="panel-head">
+                        <h4>Match Actions</h4>
+                    </div>
+                    <div class="panel-body action-stack">
+                        <button type="button" id="toggleWicketPanel" class="btn btn-danger full-btn" @(needsNextBatsman ? "disabled" : null)>Add Wicket</button>
+
+                        <form asp-action="ChangeStrike" asp-controller="Admin" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="matchId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-purple full-btn" @(needsNextBatsman ? "disabled" : null)>Change Strike</button>
+                        </form>
+
+                        <form asp-action="EndMatch" asp-controller="Admin" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="matchId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-danger full-btn">End Match</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wicketPanel" class="dark-panel wicket-panel" style="display:none;">
+                <div class="panel-head">
+                    <h3>Wicket Details</h3>
+                </div>
+
+                <div class="panel-body">
+                    <p class="wicket-subtext">
+                        Select the out batsman, wicket type, and fielder if needed. Then save wicket.
+                    </p>
+
+                    <form asp-action="AddWicket" asp-controller="Admin" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="matchId" value="@Model.Id" />
+
+                        <div class="wicket-grid">
+                            <div class="stack-form">
+                                <label><strong>Out Batsman</strong></label>
+                                <select id="outBatsmanId" name="outBatsmanId" class="match-select" required>
+                                    <option value="">-- Select Out Batsman --</option>
+                                    @if (Model.Striker != null)
+                                    {
+                                        <option value="@Model.Striker.Id">@Model.Striker.Name</option>
+                                    }
+                                    @if (Model.NonStriker != null)
+                                    {
+                                        <option value="@Model.NonStriker.Id">@Model.NonStriker.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="stack-form">
+                                <label><strong>Wicket Type</strong></label>
+                                <select id="wicketType" name="wicketType" class="match-select" required>
+                                    <option value="">-- Select Wicket Type --</option>
+                                    <option value="Bowled">Bowled</option>
+                                    <option value="LBW">LBW</option>
+                                    <option value="Hit Wicket">Hit Wicket</option>
+                                    <option value="Caught">Caught</option>
+                                    <option value="Run Out">Run Out</option>
+                                    <option value="Stumped">Stumped</option>
+                                    <option value="Caught Behind">Caught Behind</option>
+                                </select>
+                            </div>
+
+                            <div class="stack-form" id="fielderGroup" style="display:none;">
+                                <label><strong>Fielder (if required)</strong></label>
+                                <select id="fielderId" name="fielderId" class="match-select">
+                                    <option value="">-- Select Fielder --</option>
+                                    @foreach (var player in fieldingPlayers)
+                                    {
+                                        <option value="@player.Id">@player.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="wicket-help-text">
+                            For Bowled, LBW and Hit Wicket, fielder is not needed.
+                            For Caught, Run Out, Stumped and Caught Behind, select a fielder.
+                        </div>
+
+                        <div class="wicket-action-row">
+                            <button type="submit" class="btn btn-danger">Save Wicket</button>
+                            <button type="button" id="cancelWicketPanel" class="btn btn-purple">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+
+        @if (Model.IsInningsCompleted && Model.CurrentInnings == 1 && Model.Status != "Completed")
+        {
+            <div class="notice-card notice-warning">
+                <h4>Innings Break</h4>
+                <p>First innings is completed. Please select opener batsmen and bowler for second innings.</p>
+
+                <form asp-action="StartNextInnings" asp-controller="Admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="matchId" value="@Model.Id" />
+
+                    <div class="select-grid">
+                        <div>
+                            <label><strong>Striker</strong></label>
+                            <select name="strikerId" class="match-select" required>
+                                <option value="">-- Select Striker --</option>
+                                @foreach (var player in secondInningsBattingPlayers)
+                                {
+                                    <option value="@player.Id">@player.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div>
+                            <label><strong>Non-Striker</strong></label>
+                            <select name="nonStrikerId" class="match-select" required>
+                                <option value="">-- Select Non-Striker --</option>
+                                @foreach (var player in secondInningsBattingPlayers)
+                                {
+                                    <option value="@player.Id">@player.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div>
+                            <label><strong>Bowler</strong></label>
+                            <select name="bowlerId" class="match-select" required>
+                                <option value="">-- Select Bowler --</option>
+                                @foreach (var bowler in secondInningsBowlingPlayers)
+                                {
+                                    <option value="@bowler.Id">@bowler.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-14">
+                        <button type="submit" class="btn btn-success">Start Next Innings</button>
+                    </div>
+                </form>
+            </div>
+        }
+        else if (Model.IsOverCompleted && !Model.IsInningsCompleted)
+        {
+            <div class="notice-card notice-warning">
+                <h4>Over Completed</h4>
+                <p>Please select the next bowler.</p>
+
+                <form asp-action="NextOver" asp-controller="Admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="matchId" value="@Model.Id" />
+
+                    <div class="bowler-select-wrap">
+                        <label><strong>Next Bowler</strong></label>
+                        <select name="bowlerId" class="match-select" required>
+                            <option value="">-- Select Bowler --</option>
+                            @foreach (var bowler in nextBowlerList)
+                            {
+                                <option value="@bowler.Id">@bowler.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mt-14">
+                        <button type="submit" class="btn btn-success">Start Next Over</button>
+                    </div>
+                </form>
+            </div>
+        }
+
+        @if (Model.Status == "Completed")
+        {
+            <div class="notice-card notice-success">
+                <h4>Match Completed</h4>
+                <p>
+                    <strong>Result:</strong>
+                    @(string.IsNullOrWhiteSpace(Model.ResultText) ? "Result not available" : Model.ResultText)
+                </p>
+            </div>
+        }
+
+        <div class="dark-panel ball-history-card">
+            <div class="panel-head">
+                <h3>Ball By Ball History</h3>
+            </div>
+
+            <div class="panel-body">
+                @if (balls.Any())
+                {
+                    @foreach (var ball in balls)
+                    {
+                        <div class="ball-row">
+                            <strong class="ball-over">@ball.OverNumber.@ball.BallNumber</strong>
+                            <span class="ball-text">@ball.BallText</span>
+
+                            @if (ball.Batsman != null)
+                            {
+                                <span class="ball-extra"> | Batsman: @ball.Batsman.Name</span>
+                            }
+
+                            @if (ball.Bowler != null)
+                            {
+                                <span class="ball-extra"> | Bowler: @ball.Bowler.Name</span>
+                            }
+
+                            @if (ball.IsWicket)
+                            {
+                                <span class="ball-wicket"> | Wicket</span>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-text">No ball-by-ball data available yet.</div>
+                }
+            </div>
+        </div>
+
+        <div class="button-row">
+            <a asp-action="ViewScorecard" asp-controller="Admin" asp-route-id="@Model.Id" class="btn btn-success">View Scorecard</a>
+            <a asp-action="Index" asp-controller="Admin" class="btn btn-purple">Back to Admin</a>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const toggleWicketPanelBtn = document.getElementById('toggleWicketPanel');
+        const cancelWicketPanelBtn = document.getElementById('cancelWicketPanel');
+        const wicketPanel = document.getElementById('wicketPanel');
+        const wicketType = document.getElementById('wicketType');
+        const fielderGroup = document.getElementById('fielderGroup');
+        const fielderId = document.getElementById('fielderId');
+
+        if (toggleWicketPanelBtn && wicketPanel) {
+            toggleWicketPanelBtn.addEventListener('click', function () {
+                wicketPanel.style.display = 'block';
+                toggleWicketPanelBtn.style.display = 'none';
+            });
+        }
+
+        if (cancelWicketPanelBtn && wicketPanel && toggleWicketPanelBtn) {
+            cancelWicketPanelBtn.addEventListener('click', function () {
+                wicketPanel.style.display = 'none';
+                toggleWicketPanelBtn.style.display = 'inline-block';
+            });
+        }
+
+        if (wicketType && fielderGroup && fielderId) {
+            wicketType.addEventListener('change', function () {
+                const value = this.value;
+                const needsFielder =
+                    value === 'Caught' ||
+                    value === 'Run Out' ||
+                    value === 'Stumped' ||
+                    value === 'Caught Behind';
+
+                fielderGroup.style.display = needsFielder ? 'block' : 'none';
+
+                if (!needsFielder) {
+                    fielderId.value = '';
+                }
+            });
+        }
+    </script>
+}
+<style>
+    /* =========================
+               LIVE SCORING BACKGROUND
+        ========================= */
+
+    .live-scoring-page {
+        min-height: calc(100vh - 80px);
+        padding: 14px;
+        background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.68)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .score-shell {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 16px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.56);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.10);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.48);
+    }
+
+    /* =========================
+               COMMON GLASS CARDS
+        ========================= */
+
+    .score-header-card,
+    .team-score-card,
+    .dark-panel,
+    .notice-card,
+    .info-box,
+    .ball-history-card {
+        background: linear-gradient( 135deg, rgba(139, 91, 86, 0.62), rgba(15, 23, 42, 0.92) ) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        border-radius: 16px !important;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.34);
+    }
+
+    /* =========================
+               TEXT VISIBILITY
+        ========================= */
+
+    .live-scoring-page h1,
+    .live-scoring-page h2,
+    .live-scoring-page h3,
+    .live-scoring-page h4,
+    .live-scoring-page p,
+    .live-scoring-page label,
+    .live-scoring-page strong,
+    .live-scoring-page span,
+    .live-scoring-page div {
+        color: #ffffff;
+    }
+
+    .score-match-title {
+        font-size: 25px;
+        font-weight: 1000;
+        color: #ffffff !important;
+        margin-bottom: 5px;
+        line-height: 1.2;
+    }
+
+    .score-match-meta {
+        color: rgba(255,255,255,0.86) !important;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .mini-label {
+        color: rgba(255,255,255,0.74) !important;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .big-status,
+    .team-name,
+    .info-title {
+        color: #ffffff !important;
+        font-weight: 900;
+    }
+
+    .team-name {
+        font-size: 16px;
+    }
+
+    .score-number,
+    .live-score-main {
+        color: #ffffff !important;
+        font-size: 28px;
+        font-weight: 1000;
+        line-height: 1.1;
+    }
+
+    .team-over-text,
+    .info-line,
+    .field-label,
+    .wicket-subtext,
+    .wicket-help-text,
+    .empty-text {
+        color: rgba(255,255,255,0.84) !important;
+        font-size: 13px;
+    }
+
+    /* =========================
+               GRID SPACING
+        ========================= */
+
+    /* These were plain stacked <div>s (no display:grid was ever set), which is why
+       every panel rendered full-width and the page ran far longer than it needed to.
+       Restoring the actual grid layout puts related panels side-by-side. */
+    .team-score-grid,
+    .current-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .action-grid,
+    .select-grid,
+    .wicket-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        align-items: start;
+    }
+
+    .dark-panel,
+    .score-header-card,
+    .team-score-card,
+    .notice-card {
+        margin-bottom: 10px;
+        padding: 12px;
+    }
+
+    .panel-body {
+        padding: 2px 0;
+    }
+
+    .panel-head {
+        margin-bottom: 8px;
+    }
+
+        .panel-head h3,
+        .panel-head h4 {
+            margin: 0;
+            font-weight: 900;
+            font-size: 17px;
+        }
+
+    /* =========================
+               INPUTS / SELECTS
+        ========================= */
+
+    .match-select,
+    .live-scoring-page input,
+    .live-scoring-page select {
+        width: 100%;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: none;
+        outline: none;
+        background: #ffffff !important;
+        color: #111827 !important;
+        font-size: 12px;
+        font-weight: 700;
+        box-sizing: border-box;
+    }
+
+        .match-select option {
+            color: #111827;
+        }
+
+    .stack-form {
+        margin-bottom: 10px;
+    }
+
+    /* =========================
+               PLAYER PILLS
+        ========================= */
+
+    .player-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 900;
+        color: #ffffff !important;
+    }
+
+    .player-green {
+        background: linear-gradient(135deg, #22c55e, #15803d);
+    }
+
+    .player-blue {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+
+    .player-yellow {
+        background: linear-gradient(135deg, #f59e0b, #ea580c);
+    }
+
+    .player-purple {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    }
+
+    /* =========================
+               BUTTONS
+        ========================= */
+
+    .live-scoring-page .btn {
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: none;
+        color: #ffffff !important;
+        font-size: 12px;
+        font-weight: 900;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.26);
+        transition: 0.22s ease;
+    }
+
+        .live-scoring-page .btn:hover {
+            transform: translateY(-1px) scale(1.02);
+            filter: brightness(1.05);
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #22c55e, #15803d) !important;
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b, #ea580c) !important;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+    }
+
+    .btn-purple {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+    }
+
+    .full-btn {
+        width: 100%;
+    }
+
+    /* =========================
+               RUN BUTTONS
+        ========================= */
+
+    .run-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+    }
+
+        .run-buttons .btn {
+            width: 100%;
+            height: 36px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+            font-size: 12px;
+        }
+
+    /* =========================
+               BALL HISTORY
+        ========================= */
+
+    .ball-row {
+        padding: 8px 10px;
+        margin-bottom: 6px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .ball-over {
+        color: #facc15 !important;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .ball-text {
+        color: #ffffff !important;
+        font-weight: 900;
+        font-size: 13px;
+    }
+
+    .ball-extra {
+        color: rgba(255,255,255,0.76) !important;
+        font-size: 12px;
+    }
+
+    .ball-wicket {
+        color: #fecaca !important;
+        font-weight: 900;
+        font-size: 12px;
+    }
+
+    /* =========================
+               ALERTS
+        ========================= */
+
+    .alert-success {
+        background: rgba(34,197,94,0.20);
+        color: #bbf7d0;
+        padding: 8px 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        font-weight: 800;
+        font-size: 12px;
+    }
+
+    .alert-error {
+        background: rgba(239,68,68,0.20);
+        color: #fecaca;
+        padding: 8px 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        font-weight: 800;
+        font-size: 12px;
+    }
+
+    /* =========================
+               MOBILE
+        ========================= */
+
+    @@media (max-width: 768px) {
+
+        .live-scoring-page {
+            padding: 10px;
+        }
+
+        .score-shell {
+            padding: 12px;
+            border-radius: 18px;
+        }
+
+        .score-match-title {
+            font-size: 20px;
+        }
+
+        .score-number,
+        .live-score-main {
+            font-size: 24px;
+        }
+
+        .team-score-grid,
+        .current-grid,
+        .action-grid,
+        .select-grid,
+        .wicket-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .dark-panel,
+        .score-header-card,
+        .team-score-card,
+        .notice-card {
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .run-buttons {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+            .run-buttons .btn {
+                height: 34px;
+            }
+
+        .button-row .btn,
+        .wicket-action-row .btn {
+            width: 100%;
+            margin-bottom: 6px;
+        }
+    }
+</style>
+
+<!-- Real-time sync: if this match is being scored from another tab/device, or a viewer's
+     page triggers a reconnect, keep this admin view in sync automatically. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+    (function () {
+        const matchId = @Model.Id;
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/match")
+            .withAutomaticReconnect()
+            .build();
+
+        // Ignore updates for a short window right after our own action, so the
+        // admin's own click doesn't cause a jarring double-reload.
+        let suppressUntil = Date.now() + 2000;
+
+        connection.on("MatchUpdated", function () {
+            if (Date.now() > suppressUntil) {
+                window.location.reload();
+            }
+        });
+
+        connection.start()
+            .then(function () { return connection.invoke("JoinMatch", matchId); })
+            .catch(function (err) { console.error("Live sync unavailable:", err); });
+    })();
+</script>

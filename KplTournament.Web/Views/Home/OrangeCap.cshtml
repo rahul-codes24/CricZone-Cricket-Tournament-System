@@ -1,0 +1,310 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Orange Cap";
+    int rank = 1;
+}
+
+<section class="orange-award-page">
+
+    <div class="orange-award-hero">
+        <div class="hero-content">
+            
+            <h1>Orange Cap</h1>
+            <p>Top run scorers of CricZone Tournament</p>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        var leader = Model.First();
+
+        <div class="leader-showcase">
+            <div class="leader-left">
+                <div class="leader-medal">#1</div>
+                <div>
+                    
+                    <h2>@leader.PlayerName</h2>
+                    <p>Leading the batting chart</p>
+                </div>
+            </div>
+
+            <div class="leader-stats">
+                <div>
+                    <strong>@leader.Runs</strong>
+                    <small>Runs</small>
+                </div>
+                <div>
+                    <strong>@leader.Sixes</strong>
+                    <small>Sixes</small>
+                </div>
+                <div>
+                    <strong>@leader.Fours</strong>
+                    <small>Fours</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-table-card">
+            <table class="premium-orange-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Runs</th>
+                        <th>Balls</th>
+                        <th>4s</th>
+                        <th>6s</th>
+                        <th>SR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var player in Model)
+                    {
+                        double sr = player.Balls > 0
+                            ? ((double)player.Runs * 100 / player.Balls)
+                            : 0;
+
+                        <tr> 
+                            <td><span class="orange-rank-badge">@rank</span></td>
+                            <td class="orange-player-name">@player.PlayerName</td>
+                            <td class="orange-runs">@player.Runs</td>
+                            <td>@player.Balls</td>
+                            <td>@player.Fours</td>
+                            <td>@player.Sixes</td>
+                            <td>@sr.ToString("0.00")</td>
+                        </tr>
+
+                        rank++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="empty-premium-card">
+            <h2>No batting data available</h2>
+            <p>Orange Cap standings will appear after match scoring starts.</p>
+        </div>
+    }
+</section>
+
+<style>
+    body {
+        margin: 0;
+    }
+
+    /* PAGE BACKGROUND */
+    .orange-award-page {
+        min-height: calc(100vh - 80px);
+        padding: 12px 16px 26px;
+        background: linear-gradient(rgba(0,0,0,.70), rgba(0,0,0,.70)), url('/images/stadium.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    /* HERO */
+    .orange-award-hero {
+        max-width: 1050px;
+        margin: 0 auto 12px;
+        padding: 24px 30px;
+        min-height: 130px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, rgba(139,91,86,.35), rgba(18,32,43,.45));
+        backdrop-filter: blur(30px);
+        box-shadow: 0 12px 28px rgba(0,0,0,.30);
+        text-align: center;
+    }
+
+        .orange-award-hero h1 {
+            margin: 0;
+            font-size: 36px; /* increased */
+            font-weight: 900;
+            color: #f9fafb;
+        }
+
+        .orange-award-hero p {
+            margin: 7px 0 0;
+            font-size: 15px; /* increased */
+            color: rgba(255,255,255,.85);
+            font-weight: 700; /* slightly stronger */
+        }
+
+    /* LEADER CARD */
+    .leader-showcase {
+        max-width: 1050px;
+        margin: 0 auto 12px;
+        padding: 14px 20px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        background: linear-gradient(135deg, rgba(139,91,86,.30), rgba(18,32,43,.50));
+        backdrop-filter: blur(30px);
+        box-shadow: 0 12px 28px rgba(0,0,0,.30);
+        color: #ffffff;
+    }
+
+    .leader-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .leader-medal {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #fb923c, #facc15);
+        color: #111827;
+        font-size: 17px; /* increased */
+        font-weight: 900;
+    }
+
+    .leader-left span {
+        color: #fbbf24;
+        font-size: 14px; /* increased */
+        font-weight: 800;
+    }
+
+    .leader-left h2 {
+        margin: 3px 0;
+        font-size: 26px; /* increased */
+        font-weight: 900;
+        color: #ffffff;
+    }
+
+    .leader-left p {
+        margin: 0;
+        color: rgba(255,255,255,.85);
+        font-size: 14px; /* increased */
+        font-weight: 700;
+    }
+
+    /* STATS */
+    .leader-stats {
+        display: flex;
+        gap: 10px;
+    }
+
+        .leader-stats div {
+            min-width: 70px;
+            padding: 10px 12px;
+            border-radius: 16px;
+            text-align: center;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+        }
+
+        .leader-stats strong {
+            display: block;
+            font-size: 20px; /* increased */
+            color: #fbbf24;
+            font-weight: 900;
+        }
+
+        .leader-stats small {
+            color: #ffffff;
+            font-size: 13px; /* increased */
+            font-weight: 700;
+        }
+
+    /* TABLE CARD */
+    .premium-table-card {
+        max-width: 1050px;
+        margin: 0 auto;
+        overflow-x: auto;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(60,40,35,.45), rgba(10,20,35,.70));
+        backdrop-filter: blur(30px);
+        border: 1px solid rgba(255,255,255,.10);
+        box-shadow: 0 12px 28px rgba(0,0,0,.30);
+    }
+
+    /* TABLE */
+    .premium-orange-table {
+        width: 100%;
+        min-width: 820px;
+        border-collapse: collapse;
+    }
+
+        .premium-orange-table thead tr {
+            background: linear-gradient( 90deg, #1a2433 0%, #223553 32%, #3b2a32 58%, #5a2416 78%, #7a2a14 100% );
+        }
+
+        .premium-orange-table th {
+            padding: 11px 18px;
+            background: transparent;
+            border: none;
+            color: #f9fafb;
+            font-size: 15px; /* increased */
+            font-weight: 800; /* stronger */
+            text-align: left;
+        }
+
+        /* TABLE BODY */
+        .premium-orange-table td {
+            padding: 11px 18px;
+            background: rgba(15,23,42,.55);
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            font-size: 15px; /* increased */
+            font-weight: 700; /* stronger */
+            color: #e5e7eb; /* slightly brighter text */
+        }
+
+        /* HOVER */
+        .premium-orange-table tbody tr:hover td {
+            background: rgba(255,255,255,.10);
+        }
+
+    /* RANK BADGE */
+    .orange-rank-badge {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        display: inline-grid;
+        place-items: center;
+        background: rgba(255,255,255,0.18);
+        color: #ffffff;
+        font-weight: 800; /* stronger */
+        font-size: 14px;
+    }
+
+    /* TEXT STYLES */
+    .orange-player-name {
+        color: #ffffff;
+        font-weight: 800; /* stronger */
+        font-size: 15px;
+    }
+
+    .orange-runs {
+        color: #fbbf24 !important;
+        font-weight: 800;
+        font-size: 15px;
+    }
+
+    /* MOBILE */
+    @@media (max-width: 768px) {
+        .orange-award-page {
+            padding: 10px;
+        }
+
+        .leader-showcase {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .leader-stats {
+            width: 100%;
+        }
+
+            .leader-stats div {
+                flex: 1;
+            }
+    }
+</style>
