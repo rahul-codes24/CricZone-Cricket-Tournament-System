@@ -13,7 +13,9 @@ public static class SeedData
             var salt = GenerateSalt();
             db.AdminUsers.Add(new AdminUser
             {
-                Email = "admin@kpl.com",
+                Email = "+919999999999",
+                MobileNumber = "+919999999999",
+                Name = "CricZone Admin",
                 PasswordSalt = salt,
                 PasswordHash = Hash("admin123", salt)
             });
