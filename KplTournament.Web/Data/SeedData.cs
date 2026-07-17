@@ -67,7 +67,7 @@ public static class SeedData
             db.SaveChanges();
         }
 
-        if (!db.Matches.Any())
+        if (!db.Matches.Any() && db.Players.Any() && db.Teams.Count() >= 2)
         {
             var teams = db.Teams.ToList();
             var p1 = db.Players.First();
