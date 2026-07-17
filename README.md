@@ -1,4 +1,4 @@
-# CricZone Tournament Management System
+# CricZone Cricket Tournament System
 
 A premium, real-time cricket tournament scoring and analytics platform built on ASP.NET Core and Microsoft SQL Server. CricZone provides a complete solution for cricket leagues to manage tournaments, register teams, input live ball-by-ball scoring and track leaderboards.
 
