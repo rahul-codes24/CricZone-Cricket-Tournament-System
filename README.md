@@ -1,0 +1,97 @@
+# 🏏 CricZone Tournament Management System
+
+A premium, real-time cricket tournament scoring and analytics platform built on **ASP.NET Core 10.0 MVC** and **Microsoft SQL Server**. CricZone provides a complete solution for cricket leagues to manage tournaments, register teams, input live ball-by-ball scoring, track leaderboards, and print PDF scorecard summaries.
+
+---
+
+## 🌟 Key Features
+
+### 1. 🟢 Live Active Match Ticker
+* A modern, glowing marquee ticker banner positioned below the header.
+* Broadcasts real-time score feeds of active matches (e.g. `🟢 CricZone Tester Tournament Live: Chaloba vs Titans - 148/3 (16.2 Overs)`) utilizing **SignalR Web Sockets** so users see updates instantly without page refreshes.
+
+### 2. 📊 Dynamic Global Stats Dashboard
+* Real-time metrics counters tracking **Teams Registered**, **Matches Played**, **Runs Scored**, and **Wickets Fallen** across all tournaments, dynamically calculated from your SQL Server database.
+
+### 3. 🔐 Hardened Organizer Portal
+* Sleek, glassmorphic auth panel supporting sliding **Sign In**, **Sign Up**, and **Forgot Password** recovery flows.
+* Strict exactly **10-digit mobile number validations** with an expanded international country code selection dropdown.
+* Strong security enforcing alphanumeric passwords (6-10 characters, letters & numbers, no special symbols) with salted SHA-256 password hashing.
+
+### 4. 🏆 Tournament Leaderboards & Awards
+* Auto-generated **Points Table** featuring standard **Net Run Rate (NRR)** calculations (correctly accounting for team and opponent bowled-out full allotted overs).
+* Live award standings:
+  * 🟠 **Orange Cap**: Top run scorers.
+  * 🟣 **Purple Cap**: Top wicket takers.
+  * ⚡ **Most Sixes**: Six hitters leaderboard.
+  * 🛡️ **Best Fielder**: Fielding points tracker (catches, run-outs, stumpings, direct hits).
+  * 🏅 **Player of the Series**: Combined weighted score leaderboard.
+
+### 5. 📄 Downloadable PDF Scorecards
+* Generate clean, professional PDF match scorecards on-demand using **QuestPDF** layout service wrappers.
+
+---
+
+## 🛠️ Technology Stack
+
+* **Backend Framework**: ASP.NET Core 10.0 (MVC)
+* **Database & ORM**: Microsoft SQL Server & Entity Framework Core (EF Core)
+* **Real-Time Communication**: ASP.NET Core SignalR (WebSockets)
+* **PDF Engine**: QuestPDF (Community License)
+* **Frontend**: HTML5 (Razor Views), CSS3 (Modern Glassmorphic UI), JavaScript (ES6+), Google Fonts (Outfit)
+* **Authentication**: Hardened Cookie-based Authentication
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+* **.NET 10.0 SDK** (or newer)
+* **Microsoft SQL Server 2022** (Express or Default LocalDB instance)
+* **SQL Server Management Studio (SSMS 2022)**
+
+### Setup Instructions
+
+1. **Clone or Extract the Project**:
+   Extract `CricZone_Tournament_Web.zip` to a folder on your machine.
+
+2. **Configure the Connection String**:
+   Open `KplTournament.Web/appsettings.json` and update the connection string to point to your local SQL Server instance:
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=CricZone;Trusted_Connection=True;TrustServerCertificate=True;"
+     }
+   }
+   ```
+   *(e.g., `Server=DESKTOP-FOK87FD\\SQLEXPRESS` or `Server=localhost\\SQLEXPRESS`)*.
+
+3. **Restore Packages & Build**:
+   Open a terminal inside the project directory (`CricZone_Tournament_Web/KplTournament.Web`) and run:
+   ```bash
+   dotnet restore
+   dotnet build
+   ```
+
+4. **Run the Application**:
+   Start the web server:
+   ```bash
+   dotnet run
+   ```
+   On startup, Entity Framework Core will automatically connect to SQL Server, create the **`CricZone`** database, generate all tables, and seed the default **`CricZone Tester Tournament`**!
+
+5. **Launch the Portal**:
+   Open your browser and navigate to:
+   * **HTTPS**: `https://localhost:51605`
+   * **HTTP**: `http://localhost:51606`
+
+---
+
+## 📂 Project Architecture
+
+* **`Controllers/`**: Contains endpoint handlers (`AdminController` for scoring/setup, `HomeController` for dashboards/leaderboards, `AccountController` for security).
+* **`Models/`**: Core database schema entities containing relational mappings.
+* **`Data/`**: AppDbContext configuration and `SeedData` initializer.
+* **`Hubs/`**: SignalR hub for live scoring synchronization.
+* **`Services/`**: PDF generation service wrappers.
+* **`Views/`**: UI views separated by feature folders.
