@@ -1,6 +1,6 @@
 # CricZone Tournament Management System
 
-A premium, real-time cricket tournament scoring and analytics platform built on ASP.NET Core 10.0 MVC and Microsoft SQL Server. CricZone provides a complete solution for cricket leagues to manage tournaments, register teams, input live ball-by-ball scoring, track leaderboards, and print PDF scorecard summaries.
+A premium, real-time cricket tournament scoring and analytics platform built on ASP.NET Core and Microsoft SQL Server. CricZone provides a complete solution for cricket leagues to manage tournaments, register teams, input live ball-by-ball scoring and track leaderboards.
 
 ---
 
@@ -8,12 +8,12 @@ A premium, real-time cricket tournament scoring and analytics platform built on 
 
 ### 1.  Live Active Match Ticker
 * A modern, glowing marquee ticker banner positioned below the header.
-* Broadcasts real-time score feeds of active matches (e.g. `🟢 CricZone Tester Tournament Live: Chaloba vs Titans - 148/3 (16.2 Overs)`) utilizing **SignalR Web Sockets** so users see updates instantly without page refreshes.
+* Broadcasts real-time score feeds of active matches utilizing **SignalR Web Sockets** so users see updates instantly without page refreshes.
 
 ### 2.  Dynamic Global Stats Dashboard
 * Real-time metrics counters tracking **Teams Registered**, **Matches Played**, **Runs Scored**, and **Wickets Fallen** across all tournaments, dynamically calculated from your SQL Server database.
 
-### 3.  Hardened Organizer Portal
+### 3.  Organizer Portal
 * Sleek, glassmorphic auth panel supporting sliding **Sign In**, **Sign Up**, and **Forgot Password** recovery flows.
 * Strict exactly **10-digit mobile number validations** with an expanded international country code selection dropdown.
 * Strong security enforcing alphanumeric passwords (6-10 characters, letters & numbers, no special symbols) with salted SHA-256 password hashing.
@@ -39,6 +39,8 @@ A premium, real-time cricket tournament scoring and analytics platform built on 
 
 ##  Getting Started
 
+Setting up CricZone on your machine few minutes. Here's everything you need.
+
 ### Prerequisites
 * **.NET 10.0 SDK**
 * **Microsoft SQL Server**
@@ -46,19 +48,27 @@ A premium, real-time cricket tournament scoring and analytics platform built on 
 
 ### Setup Instructions
 
-1. **Clone or Extract the Project**:
-   Extract `CricZone_Tournament_Web.zip` to a folder on your machine.
+**Step 1: Get the Project on Your Machine**
 
-2. **Configure the Connection String**:
-   Open `KplTournament.Web/appsettings.json` and update the connection string to point to your local SQL Server instance:
-   ```json
-   {
-     "ConnectionStrings": {
-       "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=CricZone;Trusted_Connection=True;TrustServerCertificate=True;"
-     }
-   }
-   ```
-   *(e.g., `Server=DESKTOP-FOK87FD\\SQLEXPRESS` or `Server=localhost\\SQLEXPRESS`)*.
+ **Clone the Project**:
+   Extract `CricZone_Tournament_Web.zip` to a folder wherever you'd like to keep it.
+
+**Step 2: Point It to Your Database**
+   Open `KplTournament.Web/appsettings.json` and update the connection string so it matches your SQL Server instance:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=CricZone;Trusted_Connection=True;TrustServerCertificate=True;"
+  }
+}
+```
+
+Not sure what to put for `YOUR_SERVER_NAME`? It's usually something like:
+- `Server=DESKTOP-FOK87FD\SQLEXPRESS`, or
+- `Server=localhost\SQLEXPRESS`
+
+You can find your exact server name at the top of Object Explorer in SSMS.
 
 3. **Restore Packages & Build**:
    Open a terminal inside the project directory (`CricZone_Tournament_Web/KplTournament.Web`) and run:
@@ -66,6 +76,7 @@ A premium, real-time cricket tournament scoring and analytics platform built on 
    dotnet restore
    dotnet build
    ```
+   This downloads everything the project needs and checks that it compiles cleanly.
 
 4. **Run the Application**:
    Start the web server:
